@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "rag-tele-cf",
+  "main": "src/index.ts",
+  "compatibility_date": "2024-11-01",
+  "ai": {
+    "binding": "AI"
+  },
+  "vectorize": [
+    {
+      "binding": "VECTOR_INDEX",
+      "index_name": "rag-tele-index"
+    }
+  ],
+  "vars": {
+    "DEFAULT_MODEL": "@cf/meta/llama-3.1-8b-instruct",
+    "EMBEDDING_MODEL": "@cf/baai/bge-m3"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

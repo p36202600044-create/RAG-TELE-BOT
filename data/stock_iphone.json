@@ -1,0 +1,247 @@
+{
+  "iPhone 14 Pro Max": {
+    "model": "iPhone 14 Pro Max",
+    "senin_stock": 44,
+    "change": 0,
+    "total_stock": 44,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 14 Plus": {
+    "model": "iPhone 14 Plus",
+    "senin_stock": 38,
+    "change": 0,
+    "total_stock": 38,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 14 Pro": {
+    "model": "iPhone 14 Pro",
+    "senin_stock": 42,
+    "change": 1,
+    "total_stock": 43,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 14": {
+    "model": "iPhone 14",
+    "senin_stock": 58,
+    "change": 1,
+    "total_stock": 59,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 13 Pro Max": {
+    "model": "iPhone 13 Pro Max",
+    "senin_stock": 47,
+    "change": 0,
+    "total_stock": 47,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 13 Pro": {
+    "model": "iPhone 13 Pro",
+    "senin_stock": 36,
+    "change": 2,
+    "total_stock": 38,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 13 Mini": {
+    "model": "iPhone 13 Mini",
+    "senin_stock": 26,
+    "change": 1,
+    "total_stock": 27,
+    "status": "Stok Sedang"
+  },
+  "iPhone 13": {
+    "model": "iPhone 13",
+    "senin_stock": 27,
+    "change": 5,
+    "total_stock": 32,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 12 Pro Max": {
+    "model": "iPhone 12 Pro Max",
+    "senin_stock": 50,
+    "change": 1,
+    "total_stock": 51,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 12/12 Pro": {
+    "model": "iPhone 12/12 Pro",
+    "senin_stock": 43,
+    "change": 4,
+    "total_stock": 47,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 12 Mini": {
+    "model": "iPhone 12 Mini",
+    "senin_stock": 30,
+    "change": 2,
+    "total_stock": 32,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 11 Pro Max": {
+    "model": "iPhone 11 Pro Max",
+    "senin_stock": 25,
+    "change": 1,
+    "total_stock": 26,
+    "status": "Stok Sedang"
+  },
+  "iPhone 11 Pro": {
+    "model": "iPhone 11 Pro",
+    "senin_stock": 25,
+    "change": 1,
+    "total_stock": 26,
+    "status": "Stok Sedang"
+  },
+  "iPhone 11": {
+    "model": "iPhone 11",
+    "senin_stock": 30,
+    "change": 1,
+    "total_stock": 31,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone XS Max": {
+    "model": "iPhone XS Max",
+    "senin_stock": 4,
+    "change": 0,
+    "total_stock": 4,
+    "status": "Stok Sangat Terbatas (Hampir Habis)"
+  },
+  "iPhone X / XS": {
+    "model": "iPhone X / XS",
+    "senin_stock": 14,
+    "change": 0,
+    "total_stock": 14,
+    "status": "Stok Terbatas"
+  },
+  "iPhone XR": {
+    "model": "iPhone XR",
+    "senin_stock": 16,
+    "change": 1,
+    "total_stock": 17,
+    "status": "Stok Sedang"
+  },
+  "iPhone 7 Plus": {
+    "model": "iPhone 7 Plus",
+    "senin_stock": 14,
+    "change": 0,
+    "total_stock": 14,
+    "status": "Stok Terbatas"
+  },
+  "iPhone 15 Pro Max": {
+    "model": "iPhone 15 Pro Max",
+    "senin_stock": 47,
+    "change": 1,
+    "total_stock": 48,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 15 Plus": {
+    "model": "iPhone 15 Plus",
+    "senin_stock": 32,
+    "change": 1,
+    "total_stock": 33,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 15 Pro": {
+    "model": "iPhone 15 Pro",
+    "senin_stock": 54,
+    "change": 1,
+    "total_stock": 55,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 15": {
+    "model": "iPhone 15",
+    "senin_stock": 44,
+    "change": 3,
+    "total_stock": 47,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 16 Pro Max": {
+    "model": "iPhone 16 Pro Max",
+    "senin_stock": 57,
+    "change": 4,
+    "total_stock": 61,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 16 Plus": {
+    "model": "iPhone 16 Plus",
+    "senin_stock": 31,
+    "change": 0,
+    "total_stock": 31,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 16 Pro": {
+    "model": "iPhone 16 Pro",
+    "senin_stock": 56,
+    "change": 1,
+    "total_stock": 57,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 16": {
+    "model": "iPhone 16",
+    "senin_stock": 62,
+    "change": 2,
+    "total_stock": 64,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 16e / 17e": {
+    "model": "iPhone 16e / 17e",
+    "senin_stock": 15,
+    "change": 0,
+    "total_stock": 15,
+    "status": "Stok Terbatas"
+  },
+  "iPhone 17 Pro Max": {
+    "model": "iPhone 17 Pro Max",
+    "senin_stock": 59,
+    "change": 6,
+    "total_stock": 65,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 17 Pro": {
+    "model": "iPhone 17 Pro",
+    "senin_stock": 63,
+    "change": 0,
+    "total_stock": 63,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 17 Air": {
+    "model": "iPhone 17 Air",
+    "senin_stock": 28,
+    "change": 0,
+    "total_stock": 28,
+    "status": "Stok Sedang"
+  },
+  "iPhone 17": {
+    "model": "iPhone 17",
+    "senin_stock": 69,
+    "change": 0,
+    "total_stock": 69,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 18 Pro Max": {
+    "model": "iPhone 18 Pro Max",
+    "senin_stock": 60,
+    "change": 0,
+    "total_stock": 60,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 18 Pro": {
+    "model": "iPhone 18 Pro",
+    "senin_stock": 59,
+    "change": 0,
+    "total_stock": 59,
+    "status": "Stok Banyak / Ready"
+  },
+  "iPhone 18": {
+    "model": "iPhone 18",
+    "senin_stock": 20,
+    "change": 0,
+    "total_stock": 20,
+    "status": "Stok Sedang"
+  },
+  "iPhone 17 Pro Max MAGSF": {
+    "model": "iPhone 17 Pro Max MAGSF",
+    "senin_stock": 8,
+    "change": 0,
+    "total_stock": 8,
+    "status": "Stok Terbatas"
+  }
+}

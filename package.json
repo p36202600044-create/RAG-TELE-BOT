@@ -1,0 +1,30 @@
+{
+  "name": "rag-tele",
+  "version": "1.0.0",
+  "description": "RAG System integrated with Cloudflare Workers AI, Vectorize, and Telegram Bot",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "ingest": "python3 scripts/ingest.py",
+    "upload:vectorize": "npx tsx scripts/upload_to_vectorize.ts",
+    "bot:local": "python3 scripts/local_bot.py",
+    "test:rag": "python3 scripts/test_rag.py"
+  },
+  "keywords": [
+    "rag",
+    "cloudflare-workers",
+    "workers-ai",
+    "vectorize",
+    "telegram-bot"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241112.0",
+    "@types/node": "^26.6.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "wrangler": "^3.91.0"
+  }
+}
