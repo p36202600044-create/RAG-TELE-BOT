@@ -6,6 +6,12 @@ import {
   syncStockVectors,
 } from "./rag";
 import {
+  welcomeMessage,
+  helpMessage,
+  promptsMenuMessage,
+  stockSummaryMessage,
+} from "./telegram-text";
+import {
   adjustStock,
   addStockModel,
   ensureStockDb,
@@ -83,11 +89,10 @@ function checkAdmin(request: Request, env: Env): AdminCheck {
     return {
       ok: false,
       actor: "",
-      response: new Response("Authentication required", {
+      response: new Response(JSON.stringify({ error: "Authentication required" }), {
         status: 401,
         headers: {
-          "WWW-Authenticate": 'Basic realm="Flazzstore Monitor", charset="UTF-8"',
-          "Content-Type": "text/plain; charset=utf-8",
+          "Content-Type": "application/json; charset=utf-8",
           "Cache-Control": "no-store",
           "Access-Control-Allow-Origin": "*",
         },
@@ -111,11 +116,10 @@ function checkAdmin(request: Request, env: Env): AdminCheck {
   return {
     ok: false,
     actor: "",
-    response: new Response("Invalid username or password", {
+    response: new Response(JSON.stringify({ error: "Invalid username or password" }), {
       status: 401,
       headers: {
-        "WWW-Authenticate": 'Basic realm="Flazzstore Monitor", charset="UTF-8"',
-        "Content-Type": "text/plain; charset=utf-8",
+        "Content-Type": "application/json; charset=utf-8",
         "Cache-Control": "no-store",
       },
     }),
@@ -167,34 +171,12 @@ export default {
 
           // Handle Telegram Slash Commands
           if (command === "/start") {
-            const welcomeText =
-              `<b>Halo Kak! Selamat datang di Bot Flazzstore.</b>\n\n` +
-              `Saya asisten virtual RAG Flazzstore yang siap membantu Kakak seputar:\n` +
-              `• <b>Cek ketersediaan stok casing iPhone</b> — iPhone 7 Plus hingga iPhone 18\n` +
-              `• <b>Katalog 1.100+ desain casing</b> — iPhone, Samsung Galaxy (Z Flip, Z Fold, S Series), dan lainnya\n` +
-              `• <b>Info custom casing & desain gambar sendiri</b>\n\n` +
-              `<i>Contoh pertanyaan yang bisa Kakak tanyakan:</i>\n` +
-              `• "Stok casing iPhone 15 Pro Max ada berapa?"\n` +
-              `• "Ada casing motif Japan Girl untuk iPhone 16?"\n` +
-              `• "Casing Samsung S24 ada motif apa saja?"\n` +
-              `• "Berapa sisa stok iPhone 11 Pro?"\n\n` +
-              `Ketik /stok untuk ringkasan stok terbaru, /prompts untuk lima prompt tugas Tahap 1, atau langsung ketik pertanyaan Kakak.`;
-
-            await bot.sendMessage(chatId, welcomeText, { parse_mode: "HTML" });
+            await bot.sendMessage(chatId, welcomeMessage(), { parse_mode: "HTML" });
             return new Response("OK");
           }
 
           if (command === "/help") {
-            const helpText =
-              `<b>Panduan Bot Flazzstore</b>\n\n` +
-              `• /start — sambutan & contoh pertanyaan\n` +
-              `• /stok — ringkasan stok casing iPhone terbaru\n` +
-              `• /stok iphone 15 pro — cek tipe tertentu\n` +
-              `• /prompts — lima prompt tugas Tahap 1\n` +
-              `   ↳ /restock, /normalisasi, /audit, /extract, /konsistensi\n` +
-              `Prompt Lab: ${url.origin}/prompts\n\n` +
-              `Atau langsung tanyakan stok, motif casing, dan custom desain.`;
-            await bot.sendMessage(chatId, helpText, { parse_mode: "HTML" });
+            await bot.sendMessage(chatId, helpMessage(url.origin), { parse_mode: "HTML" });
             return new Response("OK");
           }
 
@@ -207,22 +189,9 @@ export default {
           };
 
           if (command === "/prompts" || command === "/prompt") {
-            const menuText =
-              `<b>Lima Prompt Tugas — Tahap 1</b>\n\n` +
-              `1. /restock — Prioritas restock <i>(zero-shot)</i>\n` +
-              `2. /normalisasi — Normalisasi variasi "Tipe Hp" <i>(few-shot)</i>\n` +
-              `3. /audit — Audit judul & variasi terhadap stok <i>(chain-of-thought)</i>\n` +
-              `4. /extract — Ekstraksi listing ke JSON <i>(structured output)</i>\n` +
-              `5. /konsistensi — Audit Total = stok + tambahan <i>(CoT + structured output)</i>\n\n` +
-              `<b>Contoh pemakaian:</b>\n` +
-              `<code>/restock 20</code>\n` +
-              `<code>/normalisasi Iphone 14 Mini, XR, Iphone16 Pro</code>\n` +
-              `<code>/audit Judul listing... | Iphone 15, Iphone 14 Mini</code>\n` +
-              `<code>/extract IP-JOYFUL-0001</code>\n` +
-              `<code>/konsistensi total=48 stok=45 tambahan=2</code>\n\n` +
-              `<b>Prompt Lab (browser):</b> ${url.origin}/prompts\n\n` +
-              `Tanpa argumen, bot memakai data demo dari katalog/stok saat ini.`;
-            await bot.sendMessage(chatId, menuText, { parse_mode: "HTML" });
+            await bot.sendMessage(chatId, promptsMenuMessage(url.origin), {
+              parse_mode: "HTML",
+            });
             return new Response("OK");
           }
 
@@ -243,35 +212,9 @@ export default {
             query = `stok ${commandArgs}`;
           } else if (command === "/stok" || command === "/stock") {
             const stockItems = await listStock(env);
-            const summary = summariseStock(stockItems);
-            const topStocked = stockItems
-              .slice()
-              .sort((a, b) => b.total_stock - a.total_stock)
-              .slice(0, 10);
-            const lowStock = stockItems
-              .filter((item) => item.total_stock <= 15)
-              .slice(0, 6);
-
-            let stockSummary =
-              `<b>Ringkasan Stok Casing iPhone Flazzstore</b>\n` +
-              `Total: <b>${summary.totalUnits} unit</b> dari <b>${summary.totalModels} tipe</b>\n\n` +
-              `<b>Stok terbanyak:</b>\n` +
-              topStocked
-                .map((s) => `• ${s.model}: <b>${s.total_stock} unit</b> (${s.status})`)
-                .join("\n");
-
-            if (lowStock.length > 0) {
-              stockSummary +=
-                `\n\n<b>Perlu restock (≤15 unit):</b>\n` +
-                lowStock
-                  .map((s) => `• ${s.model}: <b>${s.total_stock} unit</b>`)
-                  .join("\n");
-            }
-
-            stockSummary +=
-              `\n\n<i>Untuk cek tipe lain, ketik: "stok iPhone XR" atau /stok iPhone 13 Mini.</i>`;
-
-            await bot.sendMessage(chatId, stockSummary, { parse_mode: "HTML" });
+            await bot.sendMessage(chatId, stockSummaryMessage(stockItems), {
+              parse_mode: "HTML",
+            });
             return new Response("OK");
           }
 
@@ -281,12 +224,20 @@ export default {
           // Process RAG Query
           const ragResult = await processRagQuery(query, env);
 
-          // If top product has a photo URL, send photo with caption
-          if (ragResult.topProductPhoto && ragResult.topProductPhoto.startsWith("http")) {
+          // If top product has a photo URL, send photo with caption. Telegram caps
+          // photo captions at 1024 chars, so long answers go as a separate message.
+          if (
+            ragResult.topProductPhoto &&
+            ragResult.topProductPhoto.startsWith("http") &&
+            ragResult.answer.length <= 1000
+          ) {
             await bot.sendPhoto(chatId, ragResult.topProductPhoto, ragResult.answer, {
               parse_mode: "HTML",
             });
           } else {
+            if (ragResult.topProductPhoto && ragResult.topProductPhoto.startsWith("http")) {
+              await bot.sendPhoto(chatId, ragResult.topProductPhoto);
+            }
             await bot.sendMessage(chatId, ragResult.answer, { parse_mode: "HTML" });
           }
         }

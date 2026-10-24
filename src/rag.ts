@@ -9,6 +9,15 @@ interface CompactKB {
 
 const kb = knowledgeBase as CompactKB;
 
+const STOPWORDS = new Set([
+  "casing", "case", "cover", "hybrid", "custom", "hardcase", "softcase",
+  "premium", "motif", "motifnya", "desain", "design", "gambar", "sendiri",
+  "bisa", "boleh", "ada", "apa", "saja", "yang", "untuk", "harga", "stok",
+  "ready", "dan", "dengan", "halo", "kak", "saya", "mau", "cari", "minta",
+  "info", "produk", "tipe", "hp", "handphone", "phone", "apakah", "berapa",
+  "tersedia", "punya", "dijual", "jual", "tanya", "ingin", "pesan",
+]);
+
 /**
  * Clean & tokenize text for keyword search
  */
@@ -17,7 +26,7 @@ function tokenize(text: string): string[] {
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)
-    .filter((t) => t.length > 1);
+    .filter((t) => t.length > 1 && !STOPWORDS.has(t));
 }
 
 /**
@@ -60,13 +69,22 @@ export function findMatchingStock(
 /**
  * In-memory keyword/BM25 style search across products
  */
-export function searchProducts(query: string, limit: number = 5): Array<{ product: ProductItem; score: number }> {
+export function searchProducts(
+  query: string,
+  limit: number = 5,
+  brandFilter: string = ""
+): Array<{ product: ProductItem; score: number }> {
   const qTokens = tokenize(query);
   if (qTokens.length === 0) return [];
 
   const scored: Array<{ product: ProductItem; score: number }> = [];
 
   for (const p of kb.products) {
+    // Skip placeholder/custom-service listings and listings without variants:
+    // they carry no SKU or compatible types and pollute motif recommendations.
+    if (!p.vars || p.vars.length === 0) continue;
+    if (brandFilter && brandGroup(p.brand, p.name) !== brandFilter) continue;
+
     let score = 0;
     const nameLower = p.name.toLowerCase();
     const skuLower = p.sku.toLowerCase();
@@ -75,7 +93,7 @@ export function searchProducts(query: string, limit: number = 5): Array<{ produc
 
     for (const token of qTokens) {
       // Exact SKU match is highest priority
-      if (skuLower.includes(token)) score += 15;
+      if (skuLower && skuLower.includes(token)) score += 15;
       // Name match
       if (nameLower.includes(token)) score += 6;
       // Variation/compatible model match
@@ -84,12 +102,15 @@ export function searchProducts(query: string, limit: number = 5): Array<{ produc
       if (brandLower.includes(token)) score += 3;
     }
 
+    // Prefer complete catalog rows over rows missing a SKU.
+    if (score > 0 && p.sku) score += 2;
+
     // Bonus for phrase match
     if (nameLower.includes(query.toLowerCase().trim())) {
       score += 20;
     }
 
-    if (score > 0) {
+    if (score >= 6) {
       scored.push({ product: p, score });
     }
   }
@@ -114,9 +135,12 @@ export async function processRagQuery(
   const stockDbReady = await ensureStockDb(env);
   const stockMap = await getStockMap(env);
   const matchedStocks = findMatchingStock(query, stockMap);
+  const targetBrand = wantedBrand(query);
+  const queryTokens = tokenize(query);
   let relevantDocs: string[] = [];
   let sources: Array<{ id: string; title: string; type: string; score?: number }> = [];
   const sourceKeys = new Set<string>();
+  const seenProductKeys = new Set<string>();
   let topPhoto: string | undefined = undefined;
   let vectorMatches = 0;
   let productMatches = 0;
@@ -178,7 +202,7 @@ export async function processRagQuery(
       const vector = embedRes.data?.[0] || embedRes[0];
       if (vector && Array.isArray(vector)) {
         const queryRes: any = await env.VECTOR_INDEX.query(vector, {
-          topK: 4,
+          topK: 6,
           returnMetadata: "all",
         });
 
@@ -187,14 +211,68 @@ export async function processRagQuery(
           vectorMatches = queryRes.matches.length;
           for (const match of queryRes.matches) {
             const meta = match.metadata || {};
+            const metaType = String(meta.type || "");
+
+            // Stock documents are already sourced live from D1 above. Use them
+            // only as a fallback when the direct stock match missed the model,
+            // and never render them as catalog entries.
+            if (metaType === "stock_item") {
+              if (
+                meta.model &&
+                !matchedStocks.some((s) => s.model === meta.model)
+              ) {
+                relevantDocs.push(
+                  `[STOK GUDANG] Tipe: ${meta.model} | Total tersedia: ${meta.total_stock} unit`
+                );
+                addSource({
+                  id: match.id,
+                  title: `Stok ${meta.model}`,
+                  type: "vector_match",
+                  score: match.score,
+                });
+              }
+              continue;
+            }
+            if (metaType === "stock_overview") continue;
+            if (
+              targetBrand &&
+              brandGroup(meta.brand || "", meta.title || meta.name || "") !== targetBrand
+            ) {
+              continue;
+            }
+
+            const motif = productMotif(meta.title || meta.name || "");
+            const productKey = String(meta.sku || motif).toLowerCase();
+            if (seenProductKeys.has(productKey)) continue;
+
+            // Placeholder listings for the custom-design service are not real
+            // catalog motifs and must not become photo captions or sources.
+            if (
+              !String(meta.sku || "").trim() &&
+              /request|desain\s+gambar|custom/i.test(meta.title || meta.name || "")
+            ) {
+              continue;
+            }
+
+            // Vector recall is intentionally broad. Keep a product only when
+            // its motif words actually appear in the question, otherwise a
+            // generic question pulls in random anime/car designs.
+            const motifTokens = tokenize(motif);
+            const hasOverlap = motifTokens.some((token) =>
+              queryTokens.includes(token)
+            );
+            if (!hasOverlap) continue;
+
+            seenProductKeys.add(productKey);
+
             if (meta.text) {
-              relevantDocs.push(`[KATALOG VECTOR] ${cleanVectorText(meta.text)}`);
+              relevantDocs.push(`[KATALOG VECTOR] ${cleanVectorText(meta.text, query)}`);
             } else if (meta.name) {
               const types = Array.isArray(meta.vars)
                 ? meta.vars
                 : String(meta.vars || "").split(/\s*,\s*/);
               relevantDocs.push(
-                `[KATALOG] Motif: ${productMotif(meta.name)} | SKU: ${meta.sku || "-"} | Brand: ${meta.brand || "-"} | Contoh tipe: ${formatProductTypes(types, 5)}`
+                `[KATALOG] Motif: ${motif} | SKU: ${meta.sku ? cleanSku(meta.sku) : "-"} | Brand: ${meta.brand || "-"} | Contoh tipe: ${formatProductTypes(types, 5, meta.brand, query)}`
               );
             }
             if (!topPhoto && meta.cover_image) {
@@ -202,9 +280,7 @@ export async function processRagQuery(
             }
             addSource({
               id: match.id,
-              title: meta.title || meta.name
-                ? productMotif(meta.title || meta.name)
-                : meta.sku || match.id,
+              title: motif || meta.sku || match.id,
               type: "vector_match",
               score: match.score,
             });
@@ -217,14 +293,18 @@ export async function processRagQuery(
   }
 
   // 3. Fallback / Augment with In-Memory Keyword Search
-  const matchingProducts = searchProducts(query, 4);
+  const matchingProducts = searchProducts(query, 4, targetBrand);
   productMatches = matchingProducts.length;
   for (const item of matchingProducts) {
     const p = item.product;
     const motif = productMotif(p.name);
+    const productKey = String(p.sku || motif).toLowerCase();
+    if (seenProductKeys.has(productKey)) continue;
+    seenProductKeys.add(productKey);
     const brand = displayBrand(p.brand, p.name);
+    const skuPart = p.sku ? ` | SKU: ${cleanSku(p.sku)}` : "";
     relevantDocs.push(
-      `[KATALOG PRODUK] Motif: ${motif} | SKU: ${p.sku} | Brand: ${brand} | Jumlah tipe: ${p.vars.length} | Contoh tipe: ${formatProductTypes(p.vars, 5, brand)}`
+      `[KATALOG PRODUK] Motif: ${motif}${skuPart} | Brand: ${brand} | Jumlah tipe: ${p.vars.length} | Contoh tipe: ${formatProductTypes(p.vars, 5, brand, query)}`
     );
     if (!topPhoto && p.cover) {
       topPhoto = p.cover;
@@ -235,6 +315,18 @@ export async function processRagQuery(
       type: "product",
       score: item.score,
     });
+  }
+
+  // Custom design is a service, not a catalog motif. Add explicit context so
+  // the model does not pad the answer with unrelated listings.
+  const asksCustom =
+    /(custom|desain\s+sendiri|gambar\s+sendiri|request\s+desain|pesan\s+desain)/i.test(
+      query
+    );
+  if (asksCustom) {
+    relevantDocs.push(
+      `[LAYANAN] Flazzstore menerima pesanan custom desain gambar sendiri. Pelanggan cukup mengirim gambar/desain yang diinginkan, lalu memilih tipe HP. Tidak ada batas motif katalog untuk custom.`
+    );
   }
 
   // If no specific documents found, provide general shop context
@@ -252,14 +344,18 @@ Gunakan HANYA informasi dari [KONTEKS]. Jangan mengarang stok, SKU, harga, atau 
 
 Aturan format:
 1. Mulai dengan "Halo Kak!" lalu satu baris kosong. Untuk jawaban lanjutan, langsung jawab tanpa mengulang sapaan.
-2. Jika ada data stok, tulis bagian <b>Stok casing</b>. Maksimal 4 baris dengan format: "• <model> — <jumlah> unit (<status>)". Gunakan status singkat: Ready, Stok sedang, Stok rendah, Sangat terbatas, atau Habis.
+2. Jika [KONTEKS] memuat [STOK GUDANG] untuk tipe iPhone yang ditanyakan, SELALU tulis bagian <b>Stok casing</b>. Maksimal 4 baris dengan format: "• <model> — <jumlah> unit (<status>)". Gunakan status singkat: Ready, Stok sedang, Stok rendah, Sangat terbatas, atau Habis.
 3. Jika ada produk, tulis bagian <b>Desain terkait</b>. Maksimal 3 produk. Gunakan nama motif singkat saja; JANGAN menyalin judul listing lengkap. Format:
    • <b>Motif</b> — <code>SKU</code>
      <brand> · <jumlah> tipe (3 contoh tipe, lalu "+N tipe lain")
-4. Jika tidak ada stok atau produk yang cocok, jelaskan layanan secara singkat dan minta tipe HP atau motif yang dicari.
-5. Akhiri dengan satu kalimat ajakan singkat, maksimal 12 kata, contoh: "Ada tipe atau motif lain yang ingin dicek?"
-6. Jangan gunakan emoji. Jangan memakai tabel markdown. Jangan menyebut "[KONTEKS]" atau "dokumen".
-7. Jangan menambahkan paragraf basa-basi atau ringkasan ulang.
+   Gunakan angka "Jumlah tipe" dari konteks apa adanya; jangan menghitung sendiri dari contoh tipe.
+   Jika produk tidak punya SKU, tulis nama motif saja tanpa <code> dan tanpa kata "SKU".
+   Tampilkan hanya produk yang benar-benar relevan dengan pertanyaan.
+4. Sebutkan layanan custom gambar HANYA jika [LAYANAN] ada di konteks. Jangan menambahkannya pada jawaban katalog biasa.
+5. Jika tidak ada stok atau produk yang cocok, jelaskan layanan secara singkat dan minta tipe HP atau motif yang dicari.
+6. Akhiri dengan satu kalimat ajakan singkat, maksimal 12 kata, contoh: "Ada tipe atau motif lain yang ingin dicek?"
+7. Jangan gunakan emoji. Jangan memakai tabel markdown. Jangan menyebut "[KONTEKS]" atau "dokumen".
+8. Jangan menambahkan paragraf basa-basi, ringkasan ulang, atau kalimat penutup kedua.
 
 Contoh format (jangan salin datanya):
 Halo Kak!
@@ -348,10 +444,13 @@ Ada tipe atau motif lain yang ingin dicek?`;
  * Device names and model numbers are dropped; the remaining suffix is the motif.
  */
 const DEVICE_TOKENS = new Set([
-  "hybrid", "case", "casing", "cover", "hardcase", "softcase", "custom",
-  "iphone", "samsung", "galaxy", "google", "pixel", "note", "tab",
-  "z", "flip", "fold", "ultra", "plus", "fe", "edge", "pro", "max",
-  "air", "mini", "duo", "xr", "se", "xl", "lite", "5g", "4g",
+  "hybrid", "hybri", "case", "casing", "cover", "hardcase", "softcase",
+  "custom", "premium", "motif", "motifnya", "desain", "design", "gambar",
+  "request", "iphone", "samsung", "galaxy", "google", "pixel", "vivo",
+  "iqoo", "oppo", "xiaomi", "redmi", "realme", "infinix", "oneplus",
+  "nokia", "huawei", "note", "tab", "z", "flip", "fold", "ultra", "plus",
+  "fe", "edge", "pro", "max", "air", "mini", "duo", "xr", "se", "xl",
+  "xs", "x", "lite", "5g", "4g",
 ]);
 
 export function productMotif(name: string): string {
@@ -360,15 +459,20 @@ export function productMotif(name: string): string {
     const lower = token.toLowerCase();
     if (DEVICE_TOKENS.has(lower)) return false;
     if (/^\d{1,3}[a-z]?$/.test(lower)) return false;
-    if (/^[asz]\d{2,3}[a-z]?$/.test(lower)) return false;
+    if (/^[a-z]\d{1,3}[a-z]?$/.test(lower)) return false;
     return true;
   });
-  const motif = kept.join(" ").trim();
+  const motif = kept.slice(0, 6).join(" ").trim();
   if (motif.length >= 2) return motif;
   return tokens.slice(-4).join(" ").slice(0, 48) || String(name || "").slice(0, 48);
 }
 
-function formatProductTypes(vars: string[], limit = 3, brand = ""): string {
+function formatProductTypes(
+  vars: string[],
+  limit = 3,
+  brand = "",
+  query = ""
+): string {
   const cleaned = vars
     .map((value) =>
       String(value || "")
@@ -377,6 +481,7 @@ function formatProductTypes(vars: string[], limit = 3, brand = ""): string {
         .trim()
     )
     .filter(Boolean)
+    .filter((value) => !/^type\s*hp\s*lain/i.test(value))
     .map((value) => {
       const label = brand.toLowerCase();
       if (label === "iphone") return value.replace(/^iPhone\s+/i, "");
@@ -388,9 +493,34 @@ function formatProductTypes(vars: string[], limit = 3, brand = ""): string {
     .filter(Boolean);
   const unique = Array.from(new Set(cleaned));
   if (unique.length === 0) return "";
-  const shown = unique.slice(0, limit).join(", ");
+
+  // Show the variants the customer actually asked about first, so a query for
+  // "Samsung S24" does not lead with S26/S25 just because of catalog order.
+  const queryTokens = tokenize(query);
+  const ranked = unique.map((value, index) => {
+    const lower = value.toLowerCase();
+    let score = 0;
+    for (const token of queryTokens) {
+      const pattern = new RegExp(
+        `\\b${token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
+        "i"
+      );
+      if (pattern.test(lower)) score += 1;
+    }
+    return { value, index, score };
+  });
+  ranked.sort((a, b) => b.score - a.score || a.index - b.index);
+
+  const shown = ranked.slice(0, limit).map((item) => item.value).join(", ");
   const remaining = unique.length - limit;
   return remaining > 0 ? `${shown}, +${remaining} tipe lain` : shown;
+}
+
+function cleanSku(sku: string): string {
+  return String(sku || "")
+    .replace(/\s*-\s*/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function displayBrand(brand: string, name: string): string {
@@ -400,7 +530,24 @@ function displayBrand(brand: string, name: string): string {
   return brand || "-";
 }
 
-function stockLabel(total: number): string {
+function brandGroup(brand: string, name: string): string {
+  const label = displayBrand(brand, name).toLowerCase();
+  if (label.includes("iphone")) return "iphone";
+  if (label.includes("samsung")) return "samsung";
+  if (label.includes("pixel") || label.includes("google")) return "google";
+  if (label.includes("vivo")) return "vivo";
+  return "other";
+}
+
+function wantedBrand(query: string): string {
+  if (/\biphone\b/i.test(query)) return "iphone";
+  if (/\b(samsung|galaxy)\b|z\s*(flip|fold)/i.test(query)) return "samsung";
+  if (/\b(pixel|google)\b/i.test(query)) return "google";
+  if (/\b(vivo|iqoo)\b/i.test(query)) return "vivo";
+  return "";
+}
+
+export function stockLabel(total: number): string {
   if (total <= 0) return "Habis";
   if (total <= 5) return "Sangat terbatas";
   if (total <= 15) return "Stok rendah";
@@ -413,7 +560,7 @@ function stockLabel(total: number): string {
  * same compact motif/SKU/types shape used by the prompt, so the model does not
  * copy the auto-generated title verbatim.
  */
-function cleanVectorText(text: string): string {
+function cleanVectorText(text: string, query = ""): string {
   const source = String(text || "").trim();
   const match = source.match(
     /^Produk Casing:\s*([\s\S]+?)\.\s*SKU:\s*([\s\S]+?)\.\s*Brand:\s*([\s\S]+?)\.\s*Tipe HP yang didukung:\s*([\s\S]+?)\.\s*Link Foto:/
@@ -423,7 +570,11 @@ function cleanVectorText(text: string): string {
   }
   const types = match[4].split(/\s*,\s*/).filter(Boolean);
   const brand = displayBrand(match[3], match[1]);
-  return `Motif: ${productMotif(match[1])} | SKU: ${match[2]} | Brand: ${brand} | Contoh tipe: ${formatProductTypes(types, 5, brand)}`;
+  const sku = cleanSku(match[2]);
+  const full = sku ? kb.products.find((p) => cleanSku(p.sku) === sku) : undefined;
+  const fullVars = full && full.vars.length > 0 ? full.vars : types;
+  const skuPart = sku && sku !== "SKU" ? ` | SKU: ${sku}` : "";
+  return `Motif: ${productMotif(match[1])}${skuPart} | Brand: ${brand} | Jumlah tipe: ${fullVars.length} | Contoh tipe: ${formatProductTypes(fullVars, 5, brand, query)}`;
 }
 
 /**
@@ -452,8 +603,9 @@ function generateFallbackAnswer(
       const p = item.product;
       const motif = productMotif(p.name);
       const brand = displayBrand(p.brand, p.name);
-      lines.push(`• <b>${motif}</b> — <code>${p.sku}</code>`);
-      const types = formatProductTypes(p.vars, 3, brand);
+      const skuPart = p.sku ? ` — <code>${cleanSku(p.sku)}</code>` : "";
+      lines.push(`• <b>${motif}</b>${skuPart}`);
+      const types = formatProductTypes(p.vars, 3, brand, query);
       const typeCount = p.vars.length ? ` · ${p.vars.length} tipe` : "";
       if (types) {
         lines.push(`  ${brand}${typeCount} (${types})`);

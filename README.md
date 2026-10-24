@@ -193,6 +193,11 @@ Uji cepat semua prompt dari terminal:
 npm run test:prompts
 ```
 
+Uji format pesan bot Telegram (panjang, tag HTML, dan emoji):
+```bash
+npm run test:telegram
+```
+
 ---
 
 ### 7. Uji Cepat API RAG

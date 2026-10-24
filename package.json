@@ -13,7 +13,8 @@
     "upload:vectorize": "npx tsx scripts/upload_to_vectorize.ts",
     "bot:local": "python3 scripts/local_bot.py",
     "test:rag": "python3 scripts/test_rag.py",
-    "test:prompts": "tsx scripts/test_prompts.ts"
+    "test:prompts": "tsx scripts/test_prompts.ts",
+    "test:telegram": "tsx scripts/test-telegram.ts"
   },
   "keywords": [
     "rag",
