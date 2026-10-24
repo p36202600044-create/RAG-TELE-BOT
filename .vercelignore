@@ -1,0 +1,8 @@
+# Jangan pernah mengunggah kredensial ke Vercel.
+.env
+.env.*
+.dev.vars
+note
+.wrangler
+node_modules
+*.log

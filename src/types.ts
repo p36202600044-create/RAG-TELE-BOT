@@ -5,11 +5,18 @@ export interface Env {
   // Cloudflare Vectorize Index binding
   VECTOR_INDEX?: any;
 
+  // Cloudflare D1 binding for editable stock data
+  DB?: D1Database;
+
   // Environment variables / Secrets
   TELEGRAM_BOT_TOKEN?: string;
   TELEGRAM_SECRET_TOKEN?: string;
   DEFAULT_MODEL?: string;
   EMBEDDING_MODEL?: string;
+
+  // Dashboard (HTTP Basic Auth) credentials
+  ADMIN_USER?: string;
+  ADMIN_PASSWORD?: string;
 }
 
 export interface TelegramUser {
@@ -51,6 +58,31 @@ export interface StockItem {
   change: number;
   total_stock: number;
   status: string;
+  updated_at?: string;
+}
+
+export interface StockMap {
+  [model: string]: StockItem;
+}
+
+export interface StockMutation {
+  id: number;
+  model: string;
+  delta: number;
+  previous_stock: number;
+  new_stock: number;
+  note: string;
+  actor: string;
+  created_at: string;
+}
+
+export interface StockSummary {
+  totalModels: number;
+  totalUnits: number;
+  readyModels: number;
+  lowModels: number;
+  outModels: number;
+  lastUpdated: string | null;
 }
 
 export interface ProductItem {
@@ -70,6 +102,17 @@ export interface RagDocument {
   metadata?: Record<string, any>;
 }
 
+export interface RagTrace {
+  stockSource: "d1" | "snapshot";
+  stockModels: number;
+  stockUnits: number;
+  vectorUsed: boolean;
+  vectorMatches: number;
+  productMatches: number;
+  contextDocs: number;
+  generatedBy: "workers-ai" | "fallback";
+}
+
 export interface RagResponse {
   answer: string;
   topProductPhoto?: string;
@@ -79,4 +122,5 @@ export interface RagResponse {
     type: string;
     score?: number;
   }>;
+  trace?: RagTrace;
 }

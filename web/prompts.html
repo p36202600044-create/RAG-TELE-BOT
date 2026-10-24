@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="description" content="Prompt Lab Flazzstore — lima prompt Tahap 1 untuk restock, normalisasi variasi, audit listing, ekstraksi JSON, dan konsistensi stok.">
+  <title>Prompt Lab - Flazzstore</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('flazz-agent-theme');
+        document.documentElement.setAttribute('data-theme', saved === 'light' ? 'light' : 'dark');
+      } catch (error) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="/assets/agent-ui.css">
+</head>
+<body data-page="prompts">
+  <div class="app-shell">
+    <aside class="sidebar" id="appSidebar" aria-label="Sidebar navigasi"></aside>
+    <div class="sidebar-scrim" id="sidebarScrim"></div>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="icon-btn sidebar-toggle" type="button" data-sidebar-toggle aria-label="Buka menu">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <div class="topbar-title">
+            <div class="page-title">Prompt Lab</div>
+            <div class="page-sub">Lima prompt Tahap 1 · output JSON</div>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <span class="status-pill"><span class="status-dot" id="apiDot"></span><span id="apiLabel">Prompt API</span></span>
+          <button class="btn btn-ghost desktop-only" type="button" data-command-toggle><kbd>⌘K</kbd><span>Cari aksi</span></button>
+          <button class="btn btn-primary" id="runAllBtn" type="button" title="Jalankan semua (A)">Jalankan semua</button>
+          <a class="btn btn-ghost" href="/">Chat</a>
+          <a class="btn btn-ghost" href="/monitor">Monitoring</a>
+          <button class="icon-btn" type="button" data-theme-toggle aria-label="Ganti tema">
+            <span data-theme-icon><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg></span>
+          </button>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <section class="hero">
+          <div>
+            <h2>Lima Prompt Formatif</h2>
+            <p>
+              Halaman ini menjalankan prompt yang sama dengan perintah bot Telegram.
+              Output berupa JSON terstruktur agar mudah dinilai: prioritas restock, normalisasi
+              variasi “Tipe Hp”, audit judul vs stok, ekstraksi listing, dan audit
+              <strong>Total = stok + tambahan</strong>.
+            </p>
+          </div>
+          <div class="badge">Zero-shot · Few-shot · CoT · Structured Output</div>
+        </section>
+
+        <div class="prompt-status" role="status" aria-live="polite">
+          <span class="dot" id="statusDot"></span>
+          <span id="statusText">Menghubungkan ke Prompt API…</span>
+        </div>
+
+        <section class="prompt-grid" id="promptGrid">
+          <article class="prompt-card" data-id="restock">
+            <div class="prompt-head">
+              <div class="prompt-num">01</div>
+              <div>
+                <div class="prompt-title">Prioritas Restock Casing iPhone</div>
+                <span class="tech">Zero-shot</span>
+              </div>
+              <kbd>1</kbd>
+            </div>
+            <p class="goal">Urutkan tipe iPhone yang perlu di-restock berdasarkan stok kritis, ambang batas, dan target buffer gudang.</p>
+            <div class="field">
+              <label for="input-restock">Threshold stok (opsional)</label>
+              <textarea id="input-restock" data-input rows="2" placeholder="15">15</textarea>
+            </div>
+            <div class="actions">
+              <button class="btn btn-primary" data-run type="button">Jalankan</button>
+              <button class="btn btn-ghost btn-copy" data-copy type="button" hidden>Salin JSON</button>
+            </div>
+            <details>
+              <summary>Lihat prompt lengkap</summary>
+              <pre class="prompt-text" data-prompt>Memuat prompt…</pre>
+              <div class="eval" data-eval></div>
+            </details>
+            <pre class="result" data-result hidden></pre>
+          </article>
+
+          <article class="prompt-card" data-id="normalisasi">
+            <div class="prompt-head">
+              <div class="prompt-num">02</div>
+              <div>
+                <div class="prompt-title">Normalisasi Opsi Variasi “Tipe Hp”</div>
+                <span class="tech">Few-shot</span>
+              </div>
+              <kbd>2</kbd>
+            </div>
+            <p class="goal">Petakan variasi mentah listing ke model baku, lalu tandai variasi invalid seperti iPhone 14 Mini atau 13 Plus.</p>
+            <div class="field">
+              <label for="input-normalisasi">Daftar variasi (pisahkan koma)</label>
+              <textarea id="input-normalisasi" data-input rows="3" placeholder="Iphone 14 Mini, XR, Iphone16 Pro">Iphone 14 Mini, Iphone 13 Plus, Iphone 18 Air, Iphone Duo, Iphone16 Pro, XR, SE, Type Hp Lain Chat</textarea>
+            </div>
+            <div class="actions">
+              <button class="btn btn-primary" data-run type="button">Jalankan</button>
+              <button class="btn btn-ghost btn-copy" data-copy type="button" hidden>Salin JSON</button>
+            </div>
+            <details>
+              <summary>Lihat prompt lengkap</summary>
+              <pre class="prompt-text" data-prompt>Memuat prompt…</pre>
+              <div class="eval" data-eval></div>
+            </details>
+            <pre class="result" data-result hidden></pre>
+          </article>
+
+          <article class="prompt-card wide" data-id="audit">
+            <div class="prompt-head">
+              <div class="prompt-num">03</div>
+              <div>
+                <div class="prompt-title">Audit Kecocokan Judul dan Variasi terhadap Stok</div>
+                <span class="tech">Chain-of-Thought</span>
+              </div>
+              <kbd>3</kbd>
+            </div>
+            <p class="goal">Ekstrak klaim model dari judul, bandingkan dengan variasi, lalu cek ketersediaan stok. Temukan klaim menyesatkan dan variasi invalid.</p>
+            <div class="field">
+              <label for="input-audit">Format: judul listing | variasi1, variasi2, …</label>
+              <textarea id="input-audit" data-input rows="3" placeholder="Judul listing... | Iphone 15, Iphone 14 Mini">Case Casing iPhone 18 17 16 15 14 13 12 11 Pro Max Duo Plus Air Mini XR SE Hybrid Custom Joyful Doodle | Iphone 18 Pro Max, Iphone 18, Iphone Duo, Iphone 17, Iphone 16 Pro, Iphone 15, Iphone 14 Mini, Iphone 13 Plus, XR, Type Hp Lain Chat</textarea>
+            </div>
+            <div class="actions">
+              <button class="btn btn-primary" data-run type="button">Jalankan</button>
+              <button class="btn btn-ghost btn-copy" data-copy type="button" hidden>Salin JSON</button>
+            </div>
+            <details>
+              <summary>Lihat prompt lengkap</summary>
+              <pre class="prompt-text" data-prompt>Memuat prompt…</pre>
+              <div class="eval" data-eval></div>
+            </details>
+            <pre class="result" data-result hidden></pre>
+          </article>
+
+          <article class="prompt-card" data-id="extract">
+            <div class="prompt-head">
+              <div class="prompt-num">04</div>
+              <div>
+                <div class="prompt-title">Ekstraksi Listing ke JSON</div>
+                <span class="tech">Structured Output</span>
+              </div>
+              <kbd>4</kbd>
+            </div>
+            <p class="goal">Ubah satu listing menjadi JSON dengan skema tetap: SKU, nama, brand, foto, variasi, model terdeteksi, dan anomali.</p>
+            <div class="field">
+              <label for="input-extract">SKU atau teks listing</label>
+              <textarea id="input-extract" data-input rows="2" placeholder="IP-JOYFUL-0001">IP-JOYFUL-0001</textarea>
+            </div>
+            <div class="actions">
+              <button class="btn btn-primary" data-run type="button">Jalankan</button>
+              <button class="btn btn-ghost btn-copy" data-copy type="button" hidden>Salin JSON</button>
+            </div>
+            <details>
+              <summary>Lihat prompt lengkap</summary>
+              <pre class="prompt-text" data-prompt>Memuat prompt…</pre>
+              <div class="eval" data-eval></div>
+            </details>
+            <pre class="result" data-result hidden></pre>
+          </article>
+
+          <article class="prompt-card" data-id="konsistensi">
+            <div class="prompt-head">
+              <div class="prompt-num">05</div>
+              <div>
+                <div class="prompt-title">Audit Konsistensi Stok</div>
+                <span class="tech">CoT + Structured Output</span>
+              </div>
+              <kbd>5</kbd>
+            </div>
+            <p class="goal">Verifikasi Total = stok + tambahan untuk semua tipe, satu model, atau angka manual. Selisih dilaporkan per baris.</p>
+            <div class="field">
+              <label for="input-konsistensi">Model / angka manual (kosongkan untuk semua)</label>
+              <textarea id="input-konsistensi" data-input rows="2" placeholder="total=48 stok=45 tambahan=2"></textarea>
+            </div>
+            <div class="actions">
+              <button class="btn btn-primary" data-run type="button">Jalankan</button>
+              <button class="btn btn-ghost btn-copy" data-copy type="button" hidden>Salin JSON</button>
+            </div>
+            <details>
+              <summary>Lihat prompt lengkap</summary>
+              <pre class="prompt-text" data-prompt>Memuat prompt…</pre>
+              <div class="eval" data-eval></div>
+            </details>
+            <pre class="result" data-result hidden></pre>
+          </article>
+        </section>
+
+        <div class="footer">Prompt deterministik dari Worker · tombol 1–5 menjalankan prompt saat fokus tidak di input</div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/config.js"></script>
+  <script src="/assets/agent-ui.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      var statusDot = document.getElementById('statusDot');
+      var statusText = document.getElementById('statusText');
+      var apiDot = document.getElementById('apiDot');
+      var apiLabel = document.getElementById('apiLabel');
+      var runAllBtn = document.getElementById('runAllBtn');
+      var cards = Array.prototype.slice.call(document.querySelectorAll('.prompt-card'));
+      var runningAll = false;
+
+      function setStatus(text, kind) {
+        statusText.textContent = text;
+        statusDot.className = 'dot' + (kind ? ' ' + kind : '');
+        if (kind === 'ok') apiDot.style.background = 'var(--green)';
+        else if (kind === 'bad') apiDot.style.background = 'var(--red)';
+        else apiDot.style.background = 'var(--amber)';
+      }
+
+      function pretty(value) {
+        return JSON.stringify(value, null, 2);
+      }
+
+      function setResult(card, value, isError) {
+        var box = card.querySelector('[data-result]');
+        var copy = card.querySelector('[data-copy]');
+        box.hidden = false;
+        box.classList.toggle('error', Boolean(isError));
+        box.textContent = isError ? String(value) : pretty(value);
+        copy.hidden = Boolean(isError);
+        copy.dataset.json = isError ? '' : box.textContent;
+      }
+
+      function endpointLabel() {
+        return FlazzUI.apiBase || window.location.origin + ' (same-origin)';
+      }
+
+      async function loadPromptEntries() {
+        try {
+          var res = await fetch(FlazzUI.apiUrl('/api/prompts'), { cache: 'no-store' });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          var payload = await res.json();
+          var entries = Array.isArray(payload.entries) ? payload.entries : [];
+
+          cards.forEach(function (card) {
+            var entry = entries.find(function (item) { return item.id === card.dataset.id; });
+            var promptBox = card.querySelector('[data-prompt]');
+            var evalBox = card.querySelector('[data-eval]');
+            if (!entry) {
+              promptBox.textContent = 'Prompt tidak tersedia dari API.';
+              return;
+            }
+            promptBox.textContent = entry.prompt;
+            var rubric = Array.isArray(entry.rubric) ? entry.rubric : [];
+            evalBox.innerHTML = '';
+            var note = document.createElement('div');
+            note.textContent = 'Catatan evaluasi: ' + entry.evaluationNotes;
+            evalBox.appendChild(note);
+            if (rubric.length) {
+              var list = document.createElement('ul');
+              rubric.forEach(function (item) {
+                var li = document.createElement('li');
+                li.textContent = item;
+                list.appendChild(li);
+              });
+              evalBox.appendChild(list);
+            }
+          });
+
+          apiLabel.textContent = entries.length + ' prompt';
+          setStatus('Terhubung ke ' + endpointLabel() + ' · ' + entries.length + ' prompt siap diuji.', 'ok');
+        } catch (error) {
+          apiLabel.textContent = 'Offline';
+          setStatus('Gagal memuat prompt dari API: ' + error.message, 'bad');
+        }
+      }
+
+      async function runCard(card, silent) {
+        var id = card.dataset.id;
+        var input = card.querySelector('[data-input]').value;
+        var button = card.querySelector('[data-run]');
+        var copy = card.querySelector('[data-copy]');
+        button.disabled = true;
+        button.textContent = 'Menjalankan…';
+        copy.hidden = true;
+        try {
+          var res = await fetch(FlazzUI.apiUrl('/api/prompts/run'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: id, input: input })
+          });
+          var payload = await res.json();
+          if (!res.ok || !payload.ok) {
+            throw new Error(payload.error || ('HTTP ' + res.status));
+          }
+          setResult(card, payload.data, false);
+          if (!silent) FlazzUI.toast('Prompt ' + id + ' selesai dijalankan.', 'success');
+          return true;
+        } catch (error) {
+          setResult(card, 'Gagal menjalankan prompt: ' + error.message, true);
+          if (!silent) FlazzUI.toast('Prompt ' + id + ' gagal: ' + error.message, 'error');
+          return false;
+        } finally {
+          button.disabled = false;
+          button.textContent = 'Jalankan';
+        }
+      }
+
+      async function runAll() {
+        if (runningAll) return;
+        runningAll = true;
+        runAllBtn.disabled = true;
+        runAllBtn.textContent = 'Menjalankan…';
+        var okCount = 0;
+        for (var index = 0; index < cards.length; index++) {
+          runAllBtn.textContent = 'Prompt ' + (index + 1) + '/' + cards.length + '…';
+          if (await runCard(cards[index], true)) okCount++;
+        }
+        runningAll = false;
+        runAllBtn.disabled = false;
+        runAllBtn.textContent = 'Jalankan semua';
+        FlazzUI.toast(okCount + '/' + cards.length + ' prompt berhasil dijalankan.', okCount === cards.length ? 'success' : 'error');
+      }
+
+      cards.forEach(function (card, index) {
+        card.querySelector('[data-run]').addEventListener('click', function () {
+          runCard(card, false);
+        });
+
+        var input = card.querySelector('[data-input]');
+        input.addEventListener('keydown', function (event) {
+          if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+            event.preventDefault();
+            runCard(card, false);
+          }
+        });
+
+        var copy = card.querySelector('[data-copy]');
+        copy.addEventListener('click', function () {
+          FlazzUI.copyText(copy.dataset.json || '');
+        });
+
+        FlazzUI.registerShortcut({
+          key: String(index + 1),
+          label: 'Prompt ' + String(index + 1).padStart(2, '0') + ': ' + card.querySelector('.prompt-title').textContent,
+          run: function () { runCard(card, false); }
+        });
+      });
+
+      runAllBtn.addEventListener('click', runAll);
+
+      FlazzUI.registerShortcuts([
+        { key: 'a', label: 'Jalankan semua prompt', run: runAll },
+        { key: 'r', label: 'Muat ulang prompt & rubrik', run: loadPromptEntries }
+      ]);
+
+      FlazzUI.registerActions([
+        { id: 'run-all-prompts', label: 'Jalankan semua prompt', description: 'Lima prompt Tahap 1 sekaligus', hint: 'A', icon: 'spark', keywords: 'run all jalankan semua prompt', run: runAll },
+        { id: 'reload-prompts', label: 'Muat ulang prompt', description: 'Ambil teks & rubrik terbaru', hint: 'R', icon: 'refresh', keywords: 'reload muat ulang prompt', run: loadPromptEntries }
+      ]);
+
+      loadPromptEntries();
+    })();
+  </script>
+</body>
+</html>

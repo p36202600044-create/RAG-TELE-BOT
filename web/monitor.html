@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Monitoring Stok - Flazzstore</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('flazz-agent-theme');
+        document.documentElement.setAttribute('data-theme', saved === 'light' ? 'light' : 'dark');
+      } catch (error) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="/assets/agent-ui.css">
+</head>
+<body data-page="monitor">
+  <div class="app-shell">
+    <aside class="sidebar" id="appSidebar" aria-label="Sidebar navigasi"></aside>
+    <div class="sidebar-scrim" id="sidebarScrim"></div>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="icon-btn sidebar-toggle" type="button" data-sidebar-toggle aria-label="Buka menu">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <div class="topbar-title">
+            <div class="page-title">Monitoring Stok</div>
+            <div class="page-sub">Input, audit, dan sinkronisasi RAG</div>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <span class="status-pill"><span class="status-dot"></span><span id="connectionLabel">D1</span></span>
+          <button class="btn btn-ghost desktop-only" type="button" data-command-toggle><kbd>⌘K</kbd><span>Cari aksi</span></button>
+          <button class="btn btn-ghost" id="syncBtn" type="button" title="Sync RAG (S)">Sync RAG</button>
+          <button class="btn btn-ghost" id="exportBtn" type="button" title="Export CSV (E)">Export CSV</button>
+          <button class="btn btn-ghost" id="refreshBtn" type="button" title="Refresh (R)">Refresh</button>
+          <button class="btn btn-primary" id="addBtn" type="button" title="Tambah tipe (N)">+ Tambah Tipe</button>
+          <button class="btn btn-ghost" id="logoutBtn" type="button">Keluar</button>
+          <button class="icon-btn" type="button" data-theme-toggle aria-label="Ganti tema">
+            <span data-theme-icon><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg></span>
+          </button>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <div class="page-head">
+          <div>
+            <h2>Ringkasan gudang</h2>
+            <p>Perubahan di sini langsung dipakai bot Telegram dan pencarian RAG.</p>
+          </div>
+          <div class="head-actions">
+            <span class="updated" id="lastUpdated">Memuat data…</span>
+          </div>
+        </div>
+
+        <div class="summary">
+          <div class="stat">
+            <div class="stat-label">Total SKU</div>
+            <div class="stat-value" id="statModels">-</div>
+            <div class="stat-note" id="statSource">Memuat data…</div>
+          </div>
+          <div class="stat ready">
+            <div class="stat-label">Total Unit</div>
+            <div class="stat-value" id="statUnits">-</div>
+            <div class="stat-note">Seluruh stok gudang</div>
+          </div>
+          <div class="stat low">
+            <div class="stat-label">Stok Rendah</div>
+            <div class="stat-value" id="statLow">-</div>
+            <div class="stat-note">≤ 15 unit (perlu restock)</div>
+          </div>
+          <div class="stat out">
+            <div class="stat-label">Habis</div>
+            <div class="stat-value" id="statOut">-</div>
+            <div class="stat-note">0 unit</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <section class="card">
+            <div class="card-head">
+              <h3>Stok Terendah</h3>
+              <span class="hint">8 tipe dengan stok paling sedikit</span>
+            </div>
+            <div class="chart" id="chart"></div>
+          </section>
+
+          <section class="card">
+            <div class="card-head">
+              <h3>Riwayat Perubahan</h3>
+              <span class="hint">30 aktivitas terakhir</span>
+            </div>
+            <div class="history" id="history"></div>
+          </section>
+        </div>
+
+        <section class="card">
+          <div class="toolbar">
+            <div class="search-wrap">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <input type="text" id="searchInput" placeholder="Cari tipe iPhone… (tekan /)" autocomplete="off">
+            </div>
+            <select id="filterSelect" aria-label="Filter stok">
+              <option value="all">Semua stok</option>
+              <option value="low">Stok rendah (≤ 15)</option>
+              <option value="out">Habis (0)</option>
+              <option value="ready">Aman (&gt; 15)</option>
+            </select>
+            <span class="hint" id="tableCount"></span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tipe iPhone</th>
+                  <th style="text-align:right">Stok Awal</th>
+                  <th style="text-align:right">Perubahan</th>
+                  <th style="text-align:right">Stok Kini</th>
+                  <th>Status</th>
+                  <th>Terakhir Update</th>
+                  <th style="text-align:right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="stockRows"></tbody>
+            </table>
+          </div>
+          <div class="empty" id="tableEmpty" style="display:none;">Tidak ada tipe yang cocok dengan pencarian.</div>
+        </section>
+
+        <div class="footer">Sumber data: Cloudflare D1 · Bot Telegram &amp; dashboard memakai data yang sama</div>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="stockDialog">
+    <form method="dialog" id="stockForm">
+      <div class="dialog-head">
+        <h3>Atur Stok</h3>
+        <p id="stockDialogSubtitle">Ubah jumlah stok fisik yang tersedia.</p>
+      </div>
+      <div class="dialog-body">
+        <div class="stock-preview">Stok saat ini: <b id="stockCurrent">-</b> unit</div>
+        <div class="field">
+          <label for="setStockInput">Stok akhir (unit)</label>
+          <input type="number" id="setStockInput" min="0" max="100000" step="1" required>
+          <small>Masukkan jumlah fisik yang benar-benar ada di gudang.</small>
+        </div>
+        <div class="field">
+          <label for="stockNoteInput">Catatan (opsional)</label>
+          <textarea id="stockNoteInput" rows="2" maxlength="240" placeholder="Contoh: restock dari supplier, koreksi stok opname..."></textarea>
+        </div>
+        <div class="dialog-actions">
+          <button class="btn btn-ghost" type="button" data-close="stockDialog">Batal</button>
+          <button class="btn btn-primary" type="submit" id="stockSaveBtn">Simpan</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="addDialog">
+    <form method="dialog" id="addForm">
+      <div class="dialog-head">
+        <h3>Tambah Tipe iPhone</h3>
+        <p>Tambahkan model baru ke daftar stok gudang.</p>
+      </div>
+      <div class="dialog-body">
+        <div class="field">
+          <label for="newModelInput">Nama tipe</label>
+          <input type="text" id="newModelInput" maxlength="80" placeholder="Contoh: iPhone 18 Air" required>
+        </div>
+        <div class="field">
+          <label for="newStockInput">Stok awal (unit)</label>
+          <input type="number" id="newStockInput" min="0" max="100000" step="1" value="0" required>
+        </div>
+        <div class="dialog-actions">
+          <button class="btn btn-ghost" type="button" data-close="addDialog">Batal</button>
+          <button class="btn btn-primary" type="submit" id="addSaveBtn">Tambah</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="login-screen" id="loginScreen">
+    <form class="login-card" id="loginForm">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.5" width="14" height="19" rx="3"/><circle cx="12" cy="8.5" r="2"/><path d="M9.5 15.5h5"/></svg>
+      </div>
+      <h2>Masuk ke monitoring</h2>
+      <p>Gunakan kredensial admin untuk mengelola stok. Sesi disimpan hanya di tab ini.</p>
+      <div class="field">
+        <label for="loginUser">Username</label>
+        <input type="text" id="loginUser" autocomplete="username" value="admin" required>
+      </div>
+      <div class="field">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" autocomplete="current-password" required>
+      </div>
+      <div class="login-error" id="loginError" role="alert"></div>
+      <button class="btn btn-primary" type="submit" id="loginBtn">Masuk</button>
+    </form>
+  </div>
+
+  <script src="/config.js"></script>
+  <script src="/assets/agent-ui.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      var API_BASE = FlazzUI.apiBase;
+      var SAME_ORIGIN = !API_BASE;
+      var AUTH_KEY = 'flazz-admin-auth';
+      var state = { items: [], summary: null, history: [], source: 'seed', query: '', filter: 'all', busy: false, auth: '' };
+
+      var stockRows = document.getElementById('stockRows');
+      var stockDialog = document.getElementById('stockDialog');
+      var addDialog = document.getElementById('addDialog');
+      var loginScreen = document.getElementById('loginScreen');
+      var dialogModel = null;
+
+      function esc(value) {
+        return FlazzUI.escapeHtml(value);
+      }
+
+      function fmtNumber(value) {
+        return FlazzUI.formatNumber(value);
+      }
+
+      function fmtDate(value) {
+        if (!value) return '-';
+        var date = new Date(value);
+        if (isNaN(date.getTime())) return value;
+        return date.toLocaleString('id-ID', {
+          day: '2-digit', month: 'short', year: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        });
+      }
+
+      function statusClass(total) {
+        if (total <= 0) return 'status-out';
+        if (total <= 5) return 'status-critical';
+        if (total <= 15) return 'status-low';
+        if (total <= 30) return 'status-mid';
+        return 'status-ok';
+      }
+
+      function showToast(message, kind) {
+        FlazzUI.toast(message, kind);
+      }
+
+      function readAuth() {
+        try { return sessionStorage.getItem(AUTH_KEY) || ''; } catch (error) { return ''; }
+      }
+
+      function saveAuth(value) {
+        state.auth = value;
+        try {
+          if (value) sessionStorage.setItem(AUTH_KEY, value);
+          else sessionStorage.removeItem(AUTH_KEY);
+        } catch (error) { /* private mode */ }
+      }
+
+      function showLogin(message) {
+        loginScreen.classList.add('show');
+        document.getElementById('loginError').textContent = message || '';
+        setTimeout(function () { document.getElementById('loginPassword').focus(); }, 50);
+      }
+
+      function hideLogin() {
+        loginScreen.classList.remove('show');
+        document.getElementById('loginError').textContent = '';
+      }
+
+      async function api(path, options) {
+        var opts = options || {};
+        var headers = opts.body ? { 'Content-Type': 'application/json' } : {};
+        headers = Object.assign(headers, opts.headers || {});
+        if (state.auth) headers.Authorization = 'Basic ' + state.auth;
+        var response = await fetch(API_BASE + path, Object.assign({}, opts, { headers: headers }));
+        var data = {};
+        try { data = await response.json(); } catch (error) { data = {}; }
+        if (response.status === 401) {
+          var hadAuth = Boolean(state.auth);
+          saveAuth('');
+          var message = hadAuth ? 'Sesi login berakhir. Silakan masuk kembali.' : 'Masuk untuk mengelola stok.';
+          showLogin(message);
+          throw new Error(message);
+        }
+        if (!response.ok || data.ok === false) {
+          throw new Error(data.error || ('Permintaan gagal (' + response.status + ')'));
+        }
+        return data;
+      }
+
+      function visibleItems() {
+        var query = state.query.toLowerCase();
+        return state.items.filter(function (item) {
+          var total = Number(item.total_stock) || 0;
+          if (state.filter === 'low' && !(total > 0 && total <= 15)) return false;
+          if (state.filter === 'out' && total !== 0) return false;
+          if (state.filter === 'ready' && total <= 15) return false;
+          if (query && item.model.toLowerCase().indexOf(query) === -1) return false;
+          return true;
+        });
+      }
+
+      function renderSummary() {
+        var summary = state.summary || {};
+        document.getElementById('statModels').textContent = fmtNumber(summary.totalModels || 0);
+        document.getElementById('statUnits').textContent = fmtNumber(summary.totalUnits || 0);
+        document.getElementById('statLow').textContent = fmtNumber(summary.lowModels || 0);
+        document.getElementById('statOut').textContent = fmtNumber(summary.outModels || 0);
+        var source = state.source === 'd1' ? 'Cloudflare D1' : 'Snapshot JSON (D1 belum aktif)';
+        var updated = summary.lastUpdated ? ' · update ' + fmtDate(summary.lastUpdated) : '';
+        document.getElementById('statSource').textContent = source + updated;
+        document.getElementById('connectionLabel').textContent = state.source === 'd1' ? 'D1 live' : 'Snapshot';
+        document.getElementById('lastUpdated').textContent = summary.lastUpdated ? 'Update ' + fmtDate(summary.lastUpdated) : 'Data live';
+      }
+
+      function renderTable() {
+        var items = visibleItems();
+        document.getElementById('tableCount').textContent = items.length + ' dari ' + state.items.length + ' tipe';
+        document.getElementById('tableEmpty').style.display = items.length ? 'none' : 'block';
+        stockRows.innerHTML = items.map(function (item) {
+          var total = Number(item.total_stock) || 0;
+          var change = Number(item.change) || 0;
+          var changeClass = change > 0 ? 'delta-up' : (change < 0 ? 'delta-down' : 'num muted');
+          var changeText = change > 0 ? '+' + change : String(change);
+          return '<tr>' +
+            '<td class="model">' + esc(item.model) + '</td>' +
+            '<td class="num muted" style="text-align:right">' + fmtNumber(item.senin_stock) + '</td>' +
+            '<td class="num" style="text-align:right"><span class="delta ' + changeClass + '">' + changeText + '</span></td>' +
+            '<td class="num strong" style="text-align:right">' + fmtNumber(total) + '</td>' +
+            '<td><span class="status ' + statusClass(total) + '">' + esc(item.status) + '</span></td>' +
+            '<td class="updated">' + esc(fmtDate(item.updated_at)) + '</td>' +
+            '<td><div class="actions">' +
+              '<button class="icon-btn" type="button" data-action="dec" data-model="' + esc(item.model) + '" title="Kurangi 1" aria-label="Kurangi stok ' + esc(item.model) + '"' + (total <= 0 ? ' disabled' : '') + '>−</button>' +
+              '<button class="icon-btn" type="button" data-action="inc" data-model="' + esc(item.model) + '" title="Tambah 1" aria-label="Tambah stok ' + esc(item.model) + '">+</button>' +
+              '<button class="icon-btn set" type="button" data-action="set" data-model="' + esc(item.model) + '">Atur</button>' +
+            '</div></td>' +
+          '</tr>';
+        }).join('');
+      }
+
+      function renderChart() {
+        var chart = document.getElementById('chart');
+        var items = state.items.slice().sort(function (a, b) {
+          return (Number(a.total_stock) || 0) - (Number(b.total_stock) || 0);
+        }).slice(0, 8);
+        if (!items.length) {
+          chart.innerHTML = '<div class="history-empty">Belum ada data stok.</div>';
+          return;
+        }
+        var max = Math.max.apply(null, items.map(function (item) { return Number(item.total_stock) || 0; }));
+        if (max < 1) max = 1;
+        chart.innerHTML = items.map(function (item) {
+          var total = Number(item.total_stock) || 0;
+          var percent = Math.max(2, Math.round((total / max) * 100));
+          var barClass = total <= 0 ? 'is-out' : (total <= 15 ? 'is-low' : '');
+          return '<div class="bar-row">' +
+            '<div class="bar-name" title="' + esc(item.model) + '">' + esc(item.model) + '</div>' +
+            '<div class="bar-track"><div class="bar-fill ' + barClass + '" style="width:' + percent + '%"></div></div>' +
+            '<div class="bar-val">' + fmtNumber(total) + ' unit</div>' +
+          '</div>';
+        }).join('');
+      }
+
+      function renderHistory() {
+        var element = document.getElementById('history');
+        if (!state.history.length) {
+          element.innerHTML = '<div class="history-empty">Belum ada perubahan stok.<br>Riwayat akan muncul setelah stok diubah.</div>';
+          return;
+        }
+        element.innerHTML = state.history.map(function (entry) {
+          var up = Number(entry.delta) >= 0;
+          return '<div class="history-item">' +
+            '<div class="history-model">' + esc(entry.model) + '</div>' +
+            '<div class="history-delta ' + (up ? 'delta-up' : 'delta-down') + '">' + (up ? '+' : '') + fmtNumber(entry.delta) + '</div>' +
+            '<div class="history-meta">' + fmtDate(entry.created_at) + ' · ' + fmtNumber(entry.previous_stock) + ' → ' + fmtNumber(entry.new_stock) + ' unit' +
+              (entry.note ? ' · ' + esc(entry.note) : '') +
+            '</div>' +
+          '</div>';
+        }).join('');
+      }
+
+      function render() {
+        renderSummary();
+        renderTable();
+        renderChart();
+        renderHistory();
+      }
+
+      async function loadAll(silent) {
+        if (!silent) document.getElementById('refreshBtn').disabled = true;
+        try {
+          var results = await Promise.all([
+            api('/api/stocks'),
+            api('/api/stocks/history?limit=30')
+          ]);
+          state.items = results[0].items || [];
+          state.summary = results[0].summary || null;
+          state.source = results[0].source || 'seed';
+          state.history = results[1].items || [];
+          render();
+          return true;
+        } catch (error) {
+          if (!silent) showToast(error.message, 'error');
+          return false;
+        } finally {
+          document.getElementById('refreshBtn').disabled = false;
+        }
+      }
+
+      function openStockDialog(model) {
+        var item = state.items.find(function (entry) { return entry.model === model; });
+        if (!item) return;
+        dialogModel = model;
+        document.getElementById('stockDialogSubtitle').textContent = model + ' · ubah jumlah stok fisik';
+        document.getElementById('stockCurrent').textContent = fmtNumber(item.total_stock);
+        var input = document.getElementById('setStockInput');
+        input.value = item.total_stock;
+        document.getElementById('stockNoteInput').value = '';
+        stockDialog.showModal();
+        setTimeout(function () { input.focus(); input.select(); }, 30);
+      }
+
+      async function adjust(model, delta) {
+        if (state.busy) return;
+        state.busy = true;
+        try {
+          var result = await api('/api/stocks/adjust', {
+            method: 'POST',
+            body: JSON.stringify({ model: model, delta: delta, note: 'Aksi cepat dashboard' })
+          });
+          await loadAll(true);
+          showToast(model + ': ' + (delta > 0 ? '+' : '') + delta + ' unit → ' + result.item.total_stock + ' unit', 'success');
+        } catch (error) {
+          showToast(error.message, 'error');
+        } finally {
+          state.busy = false;
+        }
+      }
+
+      async function syncRag() {
+        var button = document.getElementById('syncBtn');
+        button.disabled = true;
+        button.textContent = 'Menyinkronkan…';
+        var batchIndex = 0;
+        try {
+          while (true) {
+            var data = await api('/api/sync-vectorize', {
+              method: 'POST',
+              body: JSON.stringify({ batchIndex: batchIndex, batchSize: 25 })
+            });
+            batchIndex++;
+            if (data.done) break;
+            button.textContent = 'Sync ' + batchIndex + '/' + data.totalBatches + '…';
+          }
+          showToast('Semua ' + batchIndex + ' batch dokumen RAG tersinkron ke Vectorize.', 'success');
+          button.textContent = 'RAG Tersinkron';
+        } catch (error) {
+          showToast(error.message, 'error');
+          button.textContent = 'Sync RAG';
+          button.disabled = false;
+        }
+      }
+
+      function exportCsv() {
+        var rows = [['Tipe iPhone', 'Stok Awal', 'Perubahan', 'Stok Kini', 'Status', 'Terakhir Update']];
+        state.items.forEach(function (item) {
+          rows.push([item.model, item.senin_stock, item.change, item.total_stock, item.status, item.updated_at || '']);
+        });
+        var csv = rows.map(function (row) {
+          return row.map(function (cell) {
+            return '"' + String(cell).replace(/"/g, '""') + '"';
+          }).join(',');
+        }).join('\r\n');
+        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        var url = URL.createObjectURL(blob);
+        var anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = 'stok-casing-flazzstore-' + new Date().toISOString().slice(0, 10) + '.csv';
+        anchor.click();
+        URL.revokeObjectURL(url);
+        showToast('CSV stok berhasil diunduh.', 'success');
+      }
+
+      function focusSearch() {
+        var input = document.getElementById('searchInput');
+        input.focus();
+        input.select();
+      }
+
+      function openAddDialog() {
+        addDialog.showModal();
+        setTimeout(function () { document.getElementById('newModelInput').focus(); }, 30);
+      }
+
+      stockRows.addEventListener('click', function (event) {
+        var button = event.target.closest('button[data-action]');
+        if (!button) return;
+        var model = button.getAttribute('data-model');
+        var action = button.getAttribute('data-action');
+        if (action === 'set') openStockDialog(model);
+        else if (action === 'inc') adjust(model, 1);
+        else if (action === 'dec') adjust(model, -1);
+      });
+
+      document.getElementById('stockForm').addEventListener('submit', async function (event) {
+        event.preventDefault();
+        if (!dialogModel) return;
+        var button = document.getElementById('stockSaveBtn');
+        button.disabled = true;
+        try {
+          var result = await api('/api/stocks/adjust', {
+            method: 'POST',
+            body: JSON.stringify({
+              model: dialogModel,
+              setStock: Number(document.getElementById('setStockInput').value),
+              note: document.getElementById('stockNoteInput').value
+            })
+          });
+          stockDialog.close();
+          await loadAll(true);
+          showToast('Stok ' + dialogModel + ' disimpan: ' + result.item.total_stock + ' unit', 'success');
+        } catch (error) {
+          showToast(error.message, 'error');
+        } finally {
+          button.disabled = false;
+        }
+      });
+
+      document.getElementById('addForm').addEventListener('submit', async function (event) {
+        event.preventDefault();
+        var button = document.getElementById('addSaveBtn');
+        button.disabled = true;
+        try {
+          var result = await api('/api/stocks', {
+            method: 'POST',
+            body: JSON.stringify({
+              model: document.getElementById('newModelInput').value,
+              total_stock: Number(document.getElementById('newStockInput').value)
+            })
+          });
+          addDialog.close();
+          document.getElementById('newModelInput').value = '';
+          document.getElementById('newStockInput').value = '0';
+          await loadAll(true);
+          showToast('Tipe baru ditambahkan: ' + result.item.model, 'success');
+        } catch (error) {
+          showToast(error.message, 'error');
+        } finally {
+          button.disabled = false;
+        }
+      });
+
+      document.querySelectorAll('[data-close]').forEach(function (button) {
+        button.addEventListener('click', function () {
+          var dialog = document.getElementById(button.getAttribute('data-close'));
+          if (dialog) dialog.close();
+        });
+      });
+
+      document.getElementById('searchInput').addEventListener('input', function (event) {
+        state.query = event.target.value.trim();
+        renderTable();
+      });
+
+      document.getElementById('filterSelect').addEventListener('change', function (event) {
+        state.filter = event.target.value;
+        renderTable();
+      });
+
+      document.getElementById('refreshBtn').addEventListener('click', function () { loadAll(false); });
+      document.getElementById('syncBtn').addEventListener('click', syncRag);
+      document.getElementById('exportBtn').addEventListener('click', exportCsv);
+      document.getElementById('addBtn').addEventListener('click', openAddDialog);
+      document.getElementById('logoutBtn').addEventListener('click', function () {
+        saveAuth('');
+        showLogin('Kamu sudah keluar dari sesi ini.');
+      });
+
+      document.getElementById('loginForm').addEventListener('submit', async function (event) {
+        event.preventDefault();
+        var username = document.getElementById('loginUser').value.trim();
+        var password = document.getElementById('loginPassword').value;
+        var button = document.getElementById('loginBtn');
+        if (!username || !password) {
+          document.getElementById('loginError').textContent = 'Username dan password wajib diisi.';
+          return;
+        }
+        button.disabled = true;
+        document.getElementById('loginError').textContent = '';
+        try {
+          saveAuth(btoa(username + ':' + password));
+          var ok = await loadAll(false);
+          if (!ok) {
+            saveAuth('');
+            throw new Error('Login gagal.');
+          }
+          hideLogin();
+          document.getElementById('loginPassword').value = '';
+        } catch (error) {
+          saveAuth('');
+          document.getElementById('loginError').textContent = 'Login gagal. Periksa username dan password.';
+        } finally {
+          button.disabled = false;
+        }
+      });
+
+      FlazzUI.registerShortcuts([
+        { key: '/', label: 'Fokus pencarian', run: focusSearch },
+        { key: 'n', label: 'Tambah tipe iPhone', run: openAddDialog },
+        { key: 'r', label: 'Refresh data stok', run: function () { loadAll(false); } },
+        { key: 's', label: 'Sync RAG ke Vectorize', run: syncRag },
+        { key: 'e', label: 'Export CSV', run: exportCsv }
+      ]);
+
+      FlazzUI.registerActions([
+        { id: 'focus-search', label: 'Fokus pencarian', description: 'Cari tipe iPhone', hint: '/', icon: 'search', keywords: 'cari search filter', run: focusSearch },
+        { id: 'add-model', label: 'Tambah tipe iPhone', description: 'Model baru ke gudang', hint: 'N', icon: 'plus', keywords: 'tambah model baru', run: openAddDialog },
+        { id: 'refresh-stock', label: 'Refresh data stok', description: 'Muat ulang D1', hint: 'R', icon: 'refresh', keywords: 'refresh muat ulang', run: function () { loadAll(false); } },
+        { id: 'sync-rag', label: 'Sync RAG ke Vectorize', description: 'Sinkronkan dokumen stok', hint: 'S', icon: 'sync', keywords: 'sync vectorize rag', run: syncRag },
+        { id: 'export-csv', label: 'Export CSV', description: 'Unduh data stok', hint: 'E', icon: 'download', keywords: 'export csv unduh', run: exportCsv },
+        { id: 'logout', label: 'Keluar dari monitoring', description: 'Hapus sesi login', icon: 'external', keywords: 'logout keluar', run: function () { saveAuth(''); showLogin('Kamu sudah keluar dari sesi ini.'); } }
+      ]);
+
+      state.auth = readAuth();
+      if (!SAME_ORIGIN && !state.auth) {
+        showLogin();
+      } else {
+        loadAll(!state.auth);
+      }
+
+      setInterval(function () {
+        if (!stockDialog.open && !addDialog.open && !state.busy && !loginScreen.classList.contains('show')) {
+          loadAll(true);
+        }
+      }, 30000);
+    })();
+  </script>
+</body>
+</html>

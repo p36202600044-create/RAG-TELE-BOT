@@ -88,8 +88,8 @@ export class TelegramBot {
       if (!data.ok) {
         console.warn("sendPhoto failed, falling back to sendMessage with image link:", data);
         const fallbackText = caption
-          ? `${caption}\n\n🖼️ <a href="${photoUrl}">Lihat Foto Produk</a>`
-          : `🖼️ <a href="${photoUrl}">Lihat Foto Produk</a>`;
+          ? `${caption}\n\n<a href="${photoUrl}">Lihat foto produk</a>`
+          : `<a href="${photoUrl}">Lihat foto produk</a>`;
         return this.sendMessage(chatId, fallbackText, { parse_mode: "HTML" });
       }
       return data;

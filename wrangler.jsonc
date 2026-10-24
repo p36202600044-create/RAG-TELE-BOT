@@ -12,10 +12,24 @@
       "index_name": "rag-tele-index"
     }
   ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "rag-tele-stock",
+      "database_id": "6da00089-c731-4d3e-9120-f4cbfd8b7e83"
+    }
+  ],
   "vars": {
-    "DEFAULT_MODEL": "@cf/meta/llama-3.1-8b-instruct",
+    "DEFAULT_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
     "EMBEDDING_MODEL": "@cf/baai/bge-m3"
   },
+  "rules": [
+    {
+      "type": "Text",
+      "globs": ["**/web/assets/*.css", "**/web/assets/*.js"],
+      "fallthrough": true
+    }
+  ],
   "observability": {
     "enabled": true
   }

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="index,follow">
+  <meta name="description" content="Asisten RAG Flazzstore: cek stok casing iPhone, cari katalog casing custom, dan monitoring stok dari satu workspace.">
+  <title>Flazzstore RAG Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('flazz-agent-theme');
+        document.documentElement.setAttribute('data-theme', saved === 'light' ? 'light' : 'dark');
+      } catch (error) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="/assets/agent-ui.css">
+</head>
+<body data-page="chat">
+  <div class="app-shell">
+    <aside class="sidebar" id="appSidebar" aria-label="Sidebar navigasi"></aside>
+    <div class="sidebar-scrim" id="sidebarScrim"></div>
+
+    <main class="main main--chat">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="icon-btn sidebar-toggle" type="button" data-sidebar-toggle aria-label="Buka menu">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <div class="topbar-title">
+            <div class="page-title">RAG Assistant</div>
+            <div class="page-sub">Stok casing iPhone &amp; katalog custom</div>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <span class="status-pill"><span class="status-dot"></span> RAG live</span>
+          <button class="btn btn-ghost desktop-only" type="button" data-command-toggle>
+            <kbd>⌘K</kbd><span>Cari aksi</span>
+          </button>
+          <a class="btn btn-ghost" href="/monitor">Monitoring</a>
+          <a class="btn btn-ghost" href="/prompts">Prompt Lab</a>
+          <button class="icon-btn" type="button" data-theme-toggle aria-label="Ganti tema">
+            <span data-theme-icon><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg></span>
+          </button>
+        </div>
+      </header>
+
+      <div class="chat-page">
+        <div class="chat-scroll" id="chatScroll">
+          <div class="chat-inner">
+            <section class="welcome" id="welcome">
+              <div class="welcome-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.5" width="14" height="19" rx="3"/><circle cx="12" cy="8.5" r="2"/><path d="M9.5 15.5h5"/></svg>
+              </div>
+              <div class="welcome-kicker"><span class="status-dot"></span> D1 · Vectorize · Workers AI</div>
+              <h1>Halo, saya asisten stok Flazzstore.</h1>
+              <p>Tanyakan stok casing iPhone, cari katalog casing custom, atau minta rekomendasi restock. Jawaban diambil dari data D1 dan indeks Vectorize, lalu dirangkai oleh Workers AI.</p>
+
+              <div class="welcome-stats" aria-label="Ringkasan data">
+                <div><b data-stat-models>35</b><span>Tipe iPhone</span></div>
+                <div><b data-stat-units>1.373</b><span>Unit stok</span></div>
+                <div><b data-stat-products>1.114</b><span>Produk katalog</span></div>
+              </div>
+
+              <div class="starter-grid" id="starterGrid">
+                <button class="starter" type="button" data-query="Stok iPhone 15 Pro Max">
+                  <span class="starter-icon" data-icon="phone" aria-hidden="true"></span>
+                  <span class="starter-text"><strong>Stok iPhone 15 Pro Max</strong><small>Cek ketersediaan unit</small></span>
+                  <kbd>1</kbd>
+                </button>
+                <button class="starter" type="button" data-query="Casing Japan Girl untuk iPhone 16">
+                  <span class="starter-icon" data-icon="palette" aria-hidden="true"></span>
+                  <span class="starter-text"><strong>Casing Japan Girl iPhone 16</strong><small>Cari motif di katalog</small></span>
+                  <kbd>2</kbd>
+                </button>
+                <button class="starter" type="button" data-query="Casing Samsung S24 motif kayu">
+                  <span class="starter-icon" data-icon="layers" aria-hidden="true"></span>
+                  <span class="starter-text"><strong>Casing Samsung S24 motif kayu</strong><small>Filter berdasarkan model</small></span>
+                  <kbd>3</kbd>
+                </button>
+                <button class="starter" type="button" data-query="Berapa stok iPhone 11 dan 13?">
+                  <span class="starter-icon" data-icon="chart" aria-hidden="true"></span>
+                  <span class="starter-text"><strong>Bandingkan stok iPhone 11 &amp; 13</strong><small>Lihat dua model sekaligus</small></span>
+                  <kbd>4</kbd>
+                </button>
+                <button class="starter" type="button" data-query="Berapa stok semua tipe iPhone?">
+                  <span class="starter-icon" data-icon="database" aria-hidden="true"></span>
+                  <span class="starter-text"><strong>Ringkasan stok semua tipe</strong><small>Rekap langsung dari D1</small></span>
+                  <kbd>5</kbd>
+                </button>
+                <button class="starter" type="button" data-query="Bisa custom gambar sendiri?">
+                  <span class="starter-icon" data-icon="wand" aria-hidden="true"></span>
+                  <span class="starter-text"><strong>Bisa custom gambar sendiri?</strong><small>Info layanan custom</small></span>
+                  <kbd>6</kbd>
+                </button>
+              </div>
+
+              <div class="welcome-hint">
+                <kbd>⌘K</kbd> command palette <span>·</span>
+                <kbd>/</kbd> fokus input <span>·</span>
+                <kbd>?</kbd> shortcut
+              </div>
+            </section>
+
+            <div class="messages" id="messages" aria-live="polite" aria-label="Percakapan"></div>
+          </div>
+        </div>
+
+        <div class="composer-area">
+          <form class="composer" id="chatForm">
+            <textarea id="userInput" rows="1" placeholder="Tanyakan stok, model, atau desain casing..." autocomplete="off" aria-label="Pesan untuk asisten"></textarea>
+            <div class="composer-bar">
+              <div class="composer-hint" id="composerHint">Enter kirim · Shift+Enter baris baru</div>
+              <div class="composer-actions">
+                <button class="icon-btn" type="button" id="clearBtn" title="Bersihkan chat" aria-label="Bersihkan chat">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </button>
+                <button class="send-btn" type="submit" id="sendBtn" aria-label="Kirim pesan">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                </button>
+              </div>
+            </div>
+          </form>
+          <div class="composer-foot">Jawaban dinamis dari D1, Vectorize, dan katalog · Bot Telegram tetap aktif 24/7</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/config.js"></script>
+  <script src="/assets/agent-ui.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      var API_BASE = FlazzUI.apiBase;
+      var messagesEl = document.getElementById('messages');
+      var welcomeEl = document.getElementById('welcome');
+      var inputEl = document.getElementById('userInput');
+      var chatForm = document.getElementById('chatForm');
+      var sendBtn = document.getElementById('sendBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var sending = false;
+      var conversation = [];
+
+      document.querySelectorAll('[data-icon]').forEach(function (node) {
+        node.innerHTML = FlazzUI.icon(node.getAttribute('data-icon'), 17);
+      });
+
+      function scrollToBottom() {
+        var scroll = document.getElementById('chatScroll');
+        if (scroll) scroll.scrollTop = scroll.scrollHeight;
+      }
+
+      function showWelcome(show) {
+        welcomeEl.hidden = !show;
+      }
+
+      function sanitizeBotHtml(text) {
+        var template = document.createElement('template');
+        template.innerHTML = String(text).replace(/\n/g, '<br>');
+        var allowed = new Set(['B', 'STRONG', 'I', 'EM', 'CODE', 'BR', 'A', 'UL', 'LI']);
+        Array.from(template.content.querySelectorAll('*')).forEach(function (element) {
+          if (!allowed.has(element.tagName)) {
+            element.replaceWith.apply(element, Array.from(element.childNodes));
+            return;
+          }
+          Array.from(element.attributes).forEach(function (attribute) {
+            var safeHref = element.tagName === 'A' && attribute.name === 'href' && /^https?:\/\//i.test(attribute.value);
+            if (safeHref) {
+              element.setAttribute('target', '_blank');
+              element.setAttribute('rel', 'noopener noreferrer');
+            } else {
+              element.removeAttribute(attribute.name);
+            }
+          });
+        });
+        return template.content;
+      }
+
+      function sourceKind(type) {
+        if (type === 'stock') return 'D1';
+        if (type === 'stock_overview') return 'D1';
+        if (type === 'vector_match') return 'Vector';
+        return 'Katalog';
+      }
+
+      function appendRagMeta(container, data) {
+        var trace = data && data.trace;
+        if (trace) {
+          var traceRow = document.createElement('div');
+          traceRow.className = 'msg-trace';
+          var chips = [
+            {
+              label: trace.stockSource === 'd1' ? 'D1 live' : 'Snapshot',
+              value: trace.stockModels + ' model · ' + FlazzUI.formatNumber(trace.stockUnits) + ' unit',
+              warn: trace.stockSource !== 'd1'
+            }
+          ];
+          if (trace.vectorUsed) {
+            chips.push({ label: 'Vectorize', value: trace.vectorMatches + ' match' });
+          }
+          if (trace.productMatches > 0) {
+            chips.push({ label: 'Katalog', value: trace.productMatches + ' match' });
+          }
+          chips.push({
+            label: trace.generatedBy === 'workers-ai' ? 'Workers AI' : 'Heuristik',
+            value: trace.contextDocs + ' konteks',
+            warn: trace.generatedBy !== 'workers-ai'
+          });
+
+          chips.forEach(function (chip) {
+            var node = document.createElement('span');
+            node.className = 'trace-chip' + (chip.warn ? ' is-warn' : '');
+            node.innerHTML = '<b>' + FlazzUI.escapeHtml(chip.label) + '</b><span>' +
+              FlazzUI.escapeHtml(chip.value) + '</span>';
+            traceRow.appendChild(node);
+          });
+          container.appendChild(traceRow);
+        }
+
+        if (data && Array.isArray(data.sources) && data.sources.length) {
+          var details = document.createElement('details');
+          details.className = 'msg-sources';
+          var summary = document.createElement('summary');
+          summary.textContent = data.sources.length + ' sumber data';
+          details.appendChild(summary);
+
+          var list = document.createElement('ul');
+          list.className = 'source-list';
+          var seen = new Set();
+          data.sources.slice(0, 8).forEach(function (source) {
+            var key = String(source.type || '') + ':' + String(source.id || source.title || '');
+            if (seen.has(key)) return;
+            seen.add(key);
+
+            var item = document.createElement('li');
+            item.className = 'source-item';
+            var kind = document.createElement('span');
+            kind.className = 'source-kind';
+            kind.textContent = sourceKind(source.type);
+            var title = document.createElement('span');
+            title.textContent = source.title || source.id || 'Sumber';
+            item.appendChild(kind);
+            item.appendChild(title);
+            list.appendChild(item);
+          });
+          details.appendChild(list);
+          container.appendChild(details);
+        }
+      }
+
+      function appendMessage(text, isUser, photoUrl, meta) {
+        var row = document.createElement('div');
+        row.className = 'message-row ' + (isUser ? 'user' : 'bot');
+        row.innerHTML =
+          '<div class="avatar" aria-hidden="true">' + (isUser ? 'K' : 'F') + '</div>' +
+          '<div class="msg-content">' +
+            '<div class="msg-meta">' +
+              '<span>' + (isUser ? 'Kamu' : 'Flazz Assistant') + '</span>' +
+              '<time>' + new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + '</time>' +
+              (!isUser ? '<button class="msg-copy" type="button" data-copy-message>Salin</button>' : '') +
+            '</div>' +
+            '<div class="bubble"></div>' +
+          '</div>';
+
+        var bubble = row.querySelector('.bubble');
+        if (isUser) {
+          bubble.textContent = text;
+        } else {
+          bubble.appendChild(sanitizeBotHtml(text));
+        }
+
+        if (photoUrl) {
+          var image = document.createElement('img');
+          image.src = photoUrl;
+          image.alt = 'Foto produk';
+          image.loading = 'lazy';
+          bubble.appendChild(image);
+        }
+
+        messagesEl.appendChild(row);
+
+        if (!isUser && meta) {
+          appendRagMeta(row.querySelector('.msg-content'), meta);
+        }
+
+        scrollToBottom();
+        return row;
+      }
+
+      function appendTyping() {
+        var row = document.createElement('div');
+        row.className = 'message-row bot';
+        row.innerHTML =
+          '<div class="avatar" aria-hidden="true">F</div>' +
+          '<div class="msg-content">' +
+            '<div class="msg-meta"><span>Flazz Assistant</span><time>sekarang</time></div>' +
+            '<div class="bubble"><span class="typing" aria-label="Sedang mencari data"><i></i><i></i><i></i></span> Sedang mencari data…</div>' +
+          '</div>';
+        messagesEl.appendChild(row);
+        scrollToBottom();
+        return row;
+      }
+
+      function autoResize() {
+        inputEl.style.height = 'auto';
+        inputEl.style.height = Math.min(inputEl.scrollHeight, 160) + 'px';
+      }
+
+      function resetComposer() {
+        inputEl.value = '';
+        inputEl.style.height = 'auto';
+        sendBtn.disabled = false;
+      }
+
+      async function submitQuery(text) {
+        var query = String(text || '').trim();
+        if (!query || sending) return;
+
+        sending = true;
+        sendBtn.disabled = true;
+        showWelcome(false);
+        appendMessage(query, true);
+        var historyForRequest = conversation.slice(-6);
+        conversation.push({ role: 'user', content: query });
+
+        inputEl.value = '';
+        inputEl.style.height = 'auto';
+        var typing = appendTyping();
+
+        try {
+          var response = await fetch(API_BASE + '/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: query, history: historyForRequest })
+          });
+          var data = await response.json();
+          typing.remove();
+          if (data.ok) {
+            conversation.push({ role: 'assistant', content: data.answer });
+            appendMessage(data.answer, false, data.topProductPhoto, data);
+          } else {
+            appendMessage('Maaf, terjadi kesalahan: ' + (data.error || 'Unknown error'), false);
+          }
+        } catch (error) {
+          typing.remove();
+          appendMessage('Gagal terhubung ke backend Cloudflare. Coba lagi sebentar.', false);
+        } finally {
+          sending = false;
+          sendBtn.disabled = false;
+          inputEl.focus();
+        }
+      }
+
+      function sendFromStarter(button) {
+        submitQuery(button.getAttribute('data-query'));
+      }
+
+      function newChat() {
+        messagesEl.innerHTML = '';
+        conversation = [];
+        resetComposer();
+        showWelcome(true);
+        inputEl.focus();
+      }
+
+      chatForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        submitQuery(inputEl.value);
+      });
+
+      inputEl.addEventListener('input', autoResize);
+      inputEl.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+          event.preventDefault();
+          submitQuery(inputEl.value);
+        } else if (event.key === 'Escape') {
+          inputEl.blur();
+        }
+      });
+
+      document.getElementById('starterGrid').addEventListener('click', function (event) {
+        var button = event.target.closest('.starter[data-query]');
+        if (button) sendFromStarter(button);
+      });
+
+      clearBtn.addEventListener('click', newChat);
+
+      messagesEl.addEventListener('click', function (event) {
+        var copyButton = event.target.closest('[data-copy-message]');
+        if (!copyButton) return;
+        var bubble = copyButton.closest('.msg-content').querySelector('.bubble');
+        if (bubble) FlazzUI.copyText(bubble.innerText);
+      });
+
+      window.addEventListener('flazz:new-chat', newChat);
+
+      document.querySelectorAll('.starter').forEach(function (button, index) {
+        FlazzUI.registerShortcut({
+          key: String(index + 1),
+          label: 'Starter: ' + button.querySelector('strong').textContent,
+          run: function () { sendFromStarter(button); }
+        });
+      });
+
+      FlazzUI.registerShortcuts([
+        { key: '/', label: 'Fokus input chat', run: function () { inputEl.focus(); } },
+        { key: 'n', label: 'Chat baru', run: newChat }
+      ]);
+
+      FlazzUI.registerActions([
+        { id: 'focus-chat', label: 'Fokus input chat', description: 'Mulai mengetik pertanyaan', hint: '/', icon: 'chat', keywords: 'input composer fokus', run: function () { inputEl.focus(); } },
+        { id: 'clear-chat', label: 'Bersihkan percakapan', description: 'Kembali ke layar awal', hint: 'N', icon: 'trash', keywords: 'clear reset new chat', run: newChat },
+        { id: 'stock-summary', label: 'Ringkas stok semua iPhone', description: 'Kirim pertanyaan ringkasan', icon: 'database', keywords: 'stok summary rekap', run: function () { submitQuery('Berapa stok semua tipe iPhone?'); } }
+      ]);
+
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('new') === '1') {
+        newChat();
+        history.replaceState(null, '', window.location.pathname);
+      }
+
+      inputEl.focus();
+    })();
+  </script>
+</body>
+</html>

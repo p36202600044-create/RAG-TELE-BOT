@@ -1,7 +1,126 @@
 import { Env, TelegramUpdate } from "./types";
 import { TelegramBot } from "./telegram";
-import { processRagQuery, getAllRagDocuments } from "./rag";
+import {
+  processRagQuery,
+  getAllRagDocuments,
+  syncStockVectors,
+} from "./rag";
+import {
+  adjustStock,
+  addStockModel,
+  ensureStockDb,
+  getStockHistory,
+  getStockMap,
+  listStock,
+  summariseStock,
+} from "./stock";
+import indexHtml from "../web/index.html";
+import monitorHtml from "../web/monitor.html";
+import promptLabHtml from "../web/prompts.html";
+import agentUiCss from "../web/assets/agent-ui.css";
+// @ts-ignore - Wrangler imports this file as a text asset.
+import agentUiJs from "../web/assets/agent-ui.js";
+import {
+  PROMPT_ENTRIES,
+  PromptId,
+  runPrompt,
+} from "./prompts";
 import knowledgeBase from "../data/knowledge_base_compact.json";
+
+function json(data: unknown, status: number = 200, headers: Record<string, string> = {}): Response {
+  return new Response(JSON.stringify(data, null, 2), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+      "Cache-Control": "no-store",
+      ...headers,
+    },
+  });
+}
+
+interface AdminCheck {
+  ok: boolean;
+  actor: string;
+  response?: Response;
+}
+
+/**
+ * Protect the monitoring dashboard and stock mutations with HTTP Basic Auth.
+ * When ADMIN_PASSWORD is not configured, only local development (localhost /
+ * 127.0.0.1) is allowed. Production requires the ADMIN_PASSWORD secret.
+ */
+function checkAdmin(request: Request, env: Env): AdminCheck {
+  const url = new URL(request.url);
+  const isLocal =
+    url.hostname === "localhost" ||
+    url.hostname === "127.0.0.1" ||
+    url.hostname === "::1" ||
+    url.hostname.endsWith(".localhost");
+
+  if (!env.ADMIN_PASSWORD) {
+    if (isLocal) return { ok: true, actor: "local-dev" };
+    return {
+      ok: false,
+      actor: "",
+      response: new Response(
+        "Monitoring belum aktif. Set secret ADMIN_PASSWORD terlebih dahulu:\n" +
+          "npx wrangler secret put ADMIN_PASSWORD",
+        {
+          status: 503,
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8",
+            "Access-Control-Allow-Origin": "*",
+            "Cache-Control": "no-store",
+          },
+        }
+      ),
+    };
+  }
+
+  const header = request.headers.get("Authorization") || "";
+  if (!header.startsWith("Basic ")) {
+    return {
+      ok: false,
+      actor: "",
+      response: new Response("Authentication required", {
+        status: 401,
+        headers: {
+          "WWW-Authenticate": 'Basic realm="Flazzstore Monitor", charset="UTF-8"',
+          "Content-Type": "text/plain; charset=utf-8",
+          "Cache-Control": "no-store",
+          "Access-Control-Allow-Origin": "*",
+        },
+      }),
+    };
+  }
+
+  try {
+    const decoded = atob(header.slice(6));
+    const separator = decoded.indexOf(":");
+    const user = separator >= 0 ? decoded.slice(0, separator) : decoded;
+    const password = separator >= 0 ? decoded.slice(separator + 1) : "";
+    const expectedUser = env.ADMIN_USER || "admin";
+    if (user === expectedUser && password === env.ADMIN_PASSWORD) {
+      return { ok: true, actor: user };
+    }
+  } catch {
+    // fall through to 401
+  }
+
+  return {
+    ok: false,
+    actor: "",
+    response: new Response("Invalid username or password", {
+      status: 401,
+      headers: {
+        "WWW-Authenticate": 'Basic realm="Flazzstore Monitor", charset="UTF-8"',
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-store",
+      },
+    }),
+  };
+}
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -39,43 +158,118 @@ export default {
 
         if (message && message.text) {
           const chatId = message.chat.id;
-          const query = message.text.trim();
+          const rawQuery = message.text.trim();
+          const commandMatch = rawQuery.match(/^(\/[a-zA-Z0-9_]+)(?:@\w+)?(?:\s+([\s\S]*))?$/);
+          const command = commandMatch ? commandMatch[1].toLowerCase() : "";
+          const commandArgs = commandMatch && commandMatch[2] ? commandMatch[2].trim() : "";
+          let query = rawQuery;
           const bot = new TelegramBot(env.TELEGRAM_BOT_TOKEN);
 
           // Handle Telegram Slash Commands
-          if (query === "/start") {
+          if (command === "/start") {
             const welcomeText =
-              `👋 <b>Halo Kak! Selamat Datang di Bot Flazzstore!</b>\n\n` +
-              `Saya adalah asisten virtual RAG Flazzstore yang siap membantu Kakak seputar:\n` +
-              `📦 <b>Cek Ketersediaan Stok Casing</b> (khususnya tipe iPhone dari iPhone 7 Plus hingga iPhone 18)\n` +
-              `📱 <b>Katalog 1.100+ Desain Casing</b> untuk iPhone, Samsung Galaxy (Z Flip, Z Fold, S Series), dll\n` +
-              `🎨 <b>Info Custom Casing & Desain Gambar Sendiri</b>\n\n` +
+              `<b>Halo Kak! Selamat datang di Bot Flazzstore.</b>\n\n` +
+              `Saya asisten virtual RAG Flazzstore yang siap membantu Kakak seputar:\n` +
+              `• <b>Cek ketersediaan stok casing iPhone</b> — iPhone 7 Plus hingga iPhone 18\n` +
+              `• <b>Katalog 1.100+ desain casing</b> — iPhone, Samsung Galaxy (Z Flip, Z Fold, S Series), dan lainnya\n` +
+              `• <b>Info custom casing & desain gambar sendiri</b>\n\n` +
               `<i>Contoh pertanyaan yang bisa Kakak tanyakan:</i>\n` +
               `• "Stok casing iPhone 15 Pro Max ada berapa?"\n` +
               `• "Ada casing motif Japan Girl untuk iPhone 16?"\n` +
               `• "Casing Samsung S24 ada motif apa saja?"\n` +
               `• "Berapa sisa stok iPhone 11 Pro?"\n\n` +
-              `Silakan ketik pertanyaan Kakak langsung ya! 😊`;
+              `Ketik /stok untuk ringkasan stok terbaru, /prompts untuk lima prompt tugas Tahap 1, atau langsung ketik pertanyaan Kakak.`;
 
             await bot.sendMessage(chatId, welcomeText, { parse_mode: "HTML" });
             return new Response("OK");
           }
 
-          if (query === "/stok" || query === "/stock") {
-            const stockSummary =
-              `📦 <b>Ringkasan Stok Casing iPhone Flazzstore:</b>\n\n` +
-              `• iPhone 17 Pro Max: <b>65 unit</b> (Ready)\n` +
-              `• iPhone 17 Pro: <b>63 unit</b> (Ready)\n` +
-              `• iPhone 17: <b>69 unit</b> (Ready)\n` +
-              `• iPhone 16 Pro Max: <b>61 unit</b> (Ready)\n` +
-              `• iPhone 16: <b>64 unit</b> (Ready)\n` +
-              `• iPhone 15 Pro Max: <b>48 unit</b> (Ready)\n` +
-              `• iPhone 15 Pro: <b>55 unit</b> (Ready)\n` +
-              `• iPhone 14 Pro Max: <b>44 unit</b> (Ready)\n` +
-              `• iPhone 13 Pro Max: <b>47 unit</b> (Ready)\n` +
-              `• iPhone 12 Pro Max: <b>51 unit</b> (Ready)\n` +
-              `• iPhone 11: <b>31 unit</b> (Ready)\n\n` +
-              `<i>Untuk cek tipe lain (misal iPhone XR, 13 Mini, SE), cukup ketik: "stok iPhone XR".</i>`;
+          if (command === "/help") {
+            const helpText =
+              `<b>Panduan Bot Flazzstore</b>\n\n` +
+              `• /start — sambutan & contoh pertanyaan\n` +
+              `• /stok — ringkasan stok casing iPhone terbaru\n` +
+              `• /stok iphone 15 pro — cek tipe tertentu\n` +
+              `• /prompts — lima prompt tugas Tahap 1\n` +
+              `   ↳ /restock, /normalisasi, /audit, /extract, /konsistensi\n` +
+              `Prompt Lab: ${url.origin}/prompts\n\n` +
+              `Atau langsung tanyakan stok, motif casing, dan custom desain.`;
+            await bot.sendMessage(chatId, helpText, { parse_mode: "HTML" });
+            return new Response("OK");
+          }
+
+          const promptCommands: Record<string, PromptId> = {
+            "/restock": "restock",
+            "/normalisasi": "normalisasi",
+            "/audit": "audit",
+            "/extract": "extract",
+            "/konsistensi": "konsistensi",
+          };
+
+          if (command === "/prompts" || command === "/prompt") {
+            const menuText =
+              `<b>Lima Prompt Tugas — Tahap 1</b>\n\n` +
+              `1. /restock — Prioritas restock <i>(zero-shot)</i>\n` +
+              `2. /normalisasi — Normalisasi variasi "Tipe Hp" <i>(few-shot)</i>\n` +
+              `3. /audit — Audit judul & variasi terhadap stok <i>(chain-of-thought)</i>\n` +
+              `4. /extract — Ekstraksi listing ke JSON <i>(structured output)</i>\n` +
+              `5. /konsistensi — Audit Total = stok + tambahan <i>(CoT + structured output)</i>\n\n` +
+              `<b>Contoh pemakaian:</b>\n` +
+              `<code>/restock 20</code>\n` +
+              `<code>/normalisasi Iphone 14 Mini, XR, Iphone16 Pro</code>\n` +
+              `<code>/audit Judul listing... | Iphone 15, Iphone 14 Mini</code>\n` +
+              `<code>/extract IP-JOYFUL-0001</code>\n` +
+              `<code>/konsistensi total=48 stok=45 tambahan=2</code>\n\n` +
+              `<b>Prompt Lab (browser):</b> ${url.origin}/prompts\n\n` +
+              `Tanpa argumen, bot memakai data demo dari katalog/stok saat ini.`;
+            await bot.sendMessage(chatId, menuText, { parse_mode: "HTML" });
+            return new Response("OK");
+          }
+
+          if (promptCommands[command]) {
+            ctx.waitUntil(bot.sendChatAction(chatId, "typing"));
+            const stockMap = await getStockMap(env);
+            const result = runPrompt(promptCommands[command], commandArgs, stockMap);
+            if (result) {
+              await bot.sendMessage(chatId, result.text, { parse_mode: "HTML" });
+            } else {
+              await bot.sendMessage(chatId, "Prompt tidak ditemukan.");
+            }
+            return new Response("OK");
+          }
+
+          if ((command === "/stok" || command === "/stock") && commandArgs) {
+            // "/stok iphone 15 pro" behaves like a normal RAG question.
+            query = `stok ${commandArgs}`;
+          } else if (command === "/stok" || command === "/stock") {
+            const stockItems = await listStock(env);
+            const summary = summariseStock(stockItems);
+            const topStocked = stockItems
+              .slice()
+              .sort((a, b) => b.total_stock - a.total_stock)
+              .slice(0, 10);
+            const lowStock = stockItems
+              .filter((item) => item.total_stock <= 15)
+              .slice(0, 6);
+
+            let stockSummary =
+              `<b>Ringkasan Stok Casing iPhone Flazzstore</b>\n` +
+              `Total: <b>${summary.totalUnits} unit</b> dari <b>${summary.totalModels} tipe</b>\n\n` +
+              `<b>Stok terbanyak:</b>\n` +
+              topStocked
+                .map((s) => `• ${s.model}: <b>${s.total_stock} unit</b> (${s.status})`)
+                .join("\n");
+
+            if (lowStock.length > 0) {
+              stockSummary +=
+                `\n\n<b>Perlu restock (≤15 unit):</b>\n` +
+                lowStock
+                  .map((s) => `• ${s.model}: <b>${s.total_stock} unit</b>`)
+                  .join("\n");
+            }
+
+            stockSummary +=
+              `\n\n<i>Untuk cek tipe lain, ketik: "stok iPhone XR" atau /stok iPhone 13 Mini.</i>`;
 
             await bot.sendMessage(chatId, stockSummary, { parse_mode: "HTML" });
             return new Response("OK");
@@ -110,44 +304,74 @@ export default {
         const body: any = await request.json();
         const query = (body.query || "").trim();
         if (!query) {
-          return new Response(JSON.stringify({ error: "query is required" }), {
-            status: 400,
-            headers: { "Content-Type": "application/json" },
-          });
+          return json({ error: "query is required" }, 400);
         }
 
-        const result = await processRagQuery(query, env);
-        return new Response(JSON.stringify({ ok: true, query, ...result }), {
-          headers: {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-          },
-        });
+        const history = Array.isArray(body.history) ? body.history : [];
+        const result = await processRagQuery(query, env, history);
+        return json({ ok: true, query, ...result });
       } catch (err: any) {
-        return new Response(JSON.stringify({ error: err.message }), {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        });
+        return json({ error: err.message }, 500);
       }
     }
 
-    // 4. Sync documents into Cloudflare Vectorize (POST /api/sync-vectorize)
+    // 4. Prompt Lab API (Tahap 1)
+    if (url.pathname === "/api/prompts" && request.method === "GET") {
+      return json({ ok: true, entries: PROMPT_ENTRIES });
+    }
+
+    if (url.pathname === "/api/prompts/run" && request.method === "POST") {
+      try {
+        const body: any = await request.json();
+        const id = String(body.id || "").trim();
+        const input = typeof body.input === "string" ? body.input : "";
+        const entry = PROMPT_ENTRIES.find((item) => item.id === id);
+        if (!entry) {
+          return json({ error: "Prompt tidak ditemukan. Gunakan id: restock, normalisasi, audit, extract, konsistensi." }, 400);
+        }
+
+        const stockMap = await getStockMap(env);
+        const result = runPrompt(id, input, stockMap);
+        if (!result) return json({ error: "Prompt gagal dijalankan." }, 500);
+
+        return json({
+          ok: true,
+          id: result.entry.id,
+          title: result.entry.title,
+          technique: result.entry.technique,
+          text: result.text,
+          data: result.data,
+        });
+      } catch (err: any) {
+        return json({ error: err.message }, 500);
+      }
+    }
+
+    // 5. Sync documents into Cloudflare Vectorize (POST /api/sync-vectorize)
     if (url.pathname === "/api/sync-vectorize" && request.method === "POST") {
+      const admin = checkAdmin(request, env);
+      if (!admin.ok) return admin.response!;
+
       if (!env.VECTOR_INDEX || !env.AI) {
-        return new Response(
-          JSON.stringify({
-            error: "VECTOR_INDEX atau Workers AI binding tidak ditemukan di environment Worker.",
-          }),
-          { status: 400, headers: { "Content-Type": "application/json" } }
+        return json(
+          {
+            error:
+              "VECTOR_INDEX atau Workers AI binding tidak ditemukan di environment Worker.",
+          },
+          400
         );
       }
 
       try {
         const body: any = await request.json().catch(() => ({}));
         const batchIndex = typeof body.batchIndex === "number" ? body.batchIndex : 0;
-        const batchSize = typeof body.batchSize === "number" ? body.batchSize : 25;
+        const batchSize = Math.min(
+          100,
+          Math.max(1, typeof body.batchSize === "number" ? body.batchSize : 25)
+        );
 
-        const allDocs = getAllRagDocuments();
+        const stockMap = await getStockMap(env);
+        const allDocs = getAllRagDocuments(stockMap);
         const totalDocs = allDocs.length;
         const totalBatches = Math.ceil(totalDocs / batchSize);
 
@@ -155,10 +379,7 @@ export default {
         const batch = allDocs.slice(start, start + batchSize);
 
         if (batch.length === 0) {
-          return new Response(
-            JSON.stringify({ ok: true, done: true, totalDocs, totalBatches }),
-            { headers: { "Content-Type": "application/json" } }
-          );
+          return json({ ok: true, done: true, totalDocs, totalBatches });
         }
 
         const embeddingModel = env.EMBEDDING_MODEL || "@cf/baai/bge-m3";
@@ -179,35 +400,32 @@ export default {
 
         await env.VECTOR_INDEX.upsert(vectors);
 
-        return new Response(
-          JSON.stringify({
-            ok: true,
-            batchIndex,
-            totalBatches,
-            count: vectors.length,
-            totalDocs,
-            done: batchIndex + 1 >= totalBatches,
-          }),
-          {
-            headers: {
-              "Content-Type": "application/json",
-              "Access-Control-Allow-Origin": "*",
-            },
-          }
-        );
-      } catch (err: any) {
-        return new Response(JSON.stringify({ error: err.message }), {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
+        return json({
+          ok: true,
+          batchIndex,
+          totalBatches,
+          count: vectors.length,
+          totalDocs,
+          done: batchIndex + 1 >= totalBatches,
         });
+      } catch (err: any) {
+        return json({ error: err.message }, 500);
       }
     }
 
     // 5. Metadata / Stats Endpoint (GET /api/stats)
     if (url.pathname === "/api/stats") {
+      const stockItems = await listStock(env);
+      const summary = summariseStock(stockItems);
       const stats = {
-        totalStockModels: Object.keys((knowledgeBase as any).stock).length,
+        totalStockModels: summary.totalModels,
+        totalStockUnits: summary.totalUnits,
+        lowStockModels: summary.lowModels,
+        outOfStockModels: summary.outModels,
         totalProducts: (knowledgeBase as any).products.length,
+        totalRagDocuments:
+          summary.totalModels + 1 + (knowledgeBase as any).products.length,
+        promptCount: PROMPT_ENTRIES.length,
         modelsSupported: [
           "iPhone 18 / 17 / 16 / 15 / 14 / 13 / 12 / 11 / X / XR / 7 Plus",
           "Samsung Galaxy Z Flip & Fold",
@@ -216,394 +434,181 @@ export default {
         ],
         hasWorkersAI: Boolean(env.AI),
         hasVectorize: Boolean(env.VECTOR_INDEX),
+        hasDatabase: Boolean(env.DB),
         hasTelegramBotToken: Boolean(env.TELEGRAM_BOT_TOKEN),
       };
-      return new Response(JSON.stringify(stats, null, 2), {
+      return json(stats);
+    }
+
+    // 6. Stock API for the monitoring dashboard (admin only)
+    if (url.pathname === "/api/stocks" && request.method === "GET") {
+      const admin = checkAdmin(request, env);
+      if (!admin.ok) return admin.response!;
+
+      const dbReady = await ensureStockDb(env);
+      const items = await listStock(env);
+      return json({
+        ok: true,
+        source: dbReady ? "d1" : "seed",
+        summary: summariseStock(items),
+        items,
+      });
+    }
+
+    if (url.pathname === "/api/stocks" && request.method === "POST") {
+      const admin = checkAdmin(request, env);
+      if (!admin.ok) return admin.response!;
+
+      try {
+        const body: any = await request.json();
+        const model = typeof body.model === "string" ? body.model.trim() : "";
+        const totalStock = Number(body.total_stock);
+
+        if (!model) return json({ error: "Nama tipe wajib diisi." }, 400);
+        if (!Number.isFinite(totalStock) || totalStock < 0) {
+          return json({ error: "Stok awal harus berupa angka ≥ 0." }, 400);
+        }
+
+        const result = await addStockModel(env, model, totalStock, admin.actor);
+        if ("error" in result) return json({ error: result.error }, 409);
+
+        let vectorSynced = false;
+        try {
+          const stockMap = await getStockMap(env);
+          vectorSynced = await syncStockVectors(env, stockMap, result.item.model);
+        } catch (syncErr) {
+          console.warn("Vector sync after add failed:", syncErr);
+        }
+
+        return json({ ok: true, item: result.item, vectorSynced });
+      } catch (err: any) {
+        return json({ error: err.message }, 500);
+      }
+    }
+
+    if (url.pathname === "/api/stocks/adjust" && request.method === "POST") {
+      const admin = checkAdmin(request, env);
+      if (!admin.ok) return admin.response!;
+
+      try {
+        const body: any = await request.json();
+        const model = typeof body.model === "string" ? body.model.trim() : "";
+        if (!model) return json({ error: "Model wajib diisi." }, 400);
+
+        const hasDelta = body.delta !== undefined && body.delta !== null;
+        const hasSetStock = body.setStock !== undefined && body.setStock !== null;
+        if (!hasDelta && !hasSetStock) {
+          return json({ error: "Isi delta atau setStock." }, 400);
+        }
+
+        const result = await adjustStock(env, model, {
+          delta: hasDelta ? Number(body.delta) : undefined,
+          setStock: hasSetStock ? Number(body.setStock) : undefined,
+          note: typeof body.note === "string" ? body.note : "",
+          actor: admin.actor,
+        });
+
+        if (!result) return json({ error: "Tipe iPhone tidak ditemukan." }, 404);
+
+        let vectorSynced = false;
+        try {
+          const stockMap = await getStockMap(env);
+          vectorSynced = await syncStockVectors(env, stockMap, model);
+        } catch (syncErr) {
+          console.warn("Vector sync after stock adjustment failed:", syncErr);
+        }
+
+        const items = await listStock(env);
+        return json({
+          ok: true,
+          item: result.item,
+          mutation: result.mutation,
+          summary: summariseStock(items),
+          vectorSynced,
+        });
+      } catch (err: any) {
+        const message = String(err.message || err);
+        const status = /tidak ditemukan|wajib|angka|delta/i.test(message) ? 400 : 500;
+        return json({ error: message }, status);
+      }
+    }
+
+    if (url.pathname === "/api/stocks/history" && request.method === "GET") {
+      const admin = checkAdmin(request, env);
+      if (!admin.ok) return admin.response!;
+
+      const model = url.searchParams.get("model") || undefined;
+      const limit = Number(url.searchParams.get("limit") || 30);
+      const items = await getStockHistory(env, model, limit);
+      return json({ ok: true, items });
+    }
+
+    // 7. Shared Agent UI assets (served identically by Cloudflare and Vercel).
+    if (url.pathname === "/assets/agent-ui.css" && request.method === "GET") {
+      return new Response(agentUiCss, {
         headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "text/css; charset=utf-8",
+          "Cache-Control": "public, max-age=3600",
         },
       });
     }
 
-    // 5. Interactive Testing Web UI (GET /)
+    if (url.pathname === "/assets/agent-ui.js" && request.method === "GET") {
+      return new Response(agentUiJs, {
+        headers: {
+          "Content-Type": "application/javascript; charset=utf-8",
+          "Cache-Control": "public, max-age=3600",
+        },
+      });
+    }
+
+    // 8. Prompt Lab (GET /prompts) — also available on Vercel
+    if (url.pathname === "/prompts" && request.method === "GET") {
+      return new Response(promptLabHtml, {
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "no-store",
+        },
+      });
+    }
+
+    // Frontend config. Cloudflare serves the API same-origin, so the base is
+    // intentionally empty; Vercel serves a config.js pointing at this Worker.
+    if (url.pathname === "/config.js" && request.method === "GET") {
+      return new Response(
+        `window.FLAZZ_API_BASE = "";\nwindow.FLAZZ_BOT_URL = "https://t.me/ragteleshofiyanbot";\n`,
+        {
+          headers: {
+            "Content-Type": "application/javascript; charset=utf-8",
+            "Cache-Control": "no-store",
+          },
+        }
+      );
+    }
+
+    // 9. Stock Monitoring Dashboard (GET /monitor)
+    // The HTML is public (noindex) and contains no data; the login screen
+    // authenticates against the protected /api/stocks endpoints instead.
+    // This keeps Cloudflare and Vercel behaviour identical.
+    if (url.pathname === "/monitor" && request.method === "GET") {
+      return new Response(monitorHtml, {
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "no-store",
+        },
+      });
+    }
+
+    // 10. RAG Chat UI (GET /)
     if (url.pathname === "/" && request.method === "GET") {
-      const html = renderWebUI();
-      return new Response(html, {
-        headers: { "Content-Type": "text/html; charset=utf-8" },
+      return new Response(indexHtml, {
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "no-store",
+        },
       });
     }
 
     return new Response("Not Found", { status: 404 });
   },
 };
-
-/**
- * Beautiful, modern HTML Testing Interface for the RAG Bot
- */
-function renderWebUI(): string {
-  return `<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flazzstore RAG AI - Cloudflare & Telegram</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-gradient: radial-gradient(circle at 10% 20%, #0d1117 0%, #161b22 100%);
-      --card-bg: rgba(22, 27, 34, 0.85);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --primary: #38bdf8;
-      --primary-hover: #0ea5e9;
-      --accent: #818cf8;
-      --text-main: #f0f6fc;
-      --text-muted: #8b949e;
-      --telegram-blue: #229ED9;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      background: var(--bg-gradient);
-      color: var(--text-main);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 24px 16px;
-    }
-    .container {
-      width: 100%;
-      max-width: 860px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    header {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 20px 24px;
-      backdrop-filter: blur(12px);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .logo-badge {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #f97316, #ec4899);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      font-weight: 700;
-      color: #fff;
-      box-shadow: 0 8px 16px rgba(249, 115, 22, 0.3);
-    }
-    h1 { font-size: 20px; font-weight: 700; }
-    .subtitle { font-size: 13px; color: var(--text-muted); }
-    .tags {
-      display: flex;
-      gap: 8px;
-    }
-    .tag {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 20px;
-      background: rgba(56, 189, 248, 0.12);
-      color: var(--primary);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-    }
-    .tag.telegram {
-      background: rgba(34, 158, 217, 0.15);
-      color: var(--telegram-blue);
-      border-color: rgba(34, 158, 217, 0.3);
-    }
-    .stats-bar {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-    }
-    .stat-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 14px 18px;
-      backdrop-filter: blur(8px);
-    }
-    .stat-val { font-size: 22px; font-weight: 700; color: #fff; }
-    .stat-lbl { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-
-    .chat-box {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      height: 480px;
-      backdrop-filter: blur(12px);
-    }
-    .messages {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .msg {
-      max-width: 82%;
-      padding: 12px 16px;
-      border-radius: 14px;
-      line-height: 1.5;
-      font-size: 14px;
-      word-wrap: break-word;
-    }
-    .msg.bot {
-      align-self: flex-start;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: #e6edf3;
-    }
-    .msg.user {
-      align-self: flex-end;
-      background: linear-gradient(135deg, #0284c7, #2563eb);
-      color: #fff;
-    }
-    .msg img {
-      max-width: 100%;
-      border-radius: 8px;
-      margin-top: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    .chips {
-      display: flex;
-      gap: 8px;
-      padding: 10px 16px;
-      overflow-x: auto;
-      background: rgba(13, 17, 23, 0.6);
-      border-top: 1px solid var(--card-border);
-    }
-    .chip {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 20px;
-      padding: 6px 12px;
-      font-size: 12px;
-      color: #cbd5e1;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.2s;
-    }
-    .chip:hover {
-      background: rgba(56, 189, 248, 0.2);
-      color: var(--primary);
-      border-color: var(--primary);
-    }
-    .input-row {
-      display: flex;
-      padding: 14px 16px;
-      background: rgba(13, 17, 23, 0.9);
-      border-top: 1px solid var(--card-border);
-      gap: 10px;
-    }
-    input[type="text"] {
-      flex: 1;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 10px;
-      padding: 12px 16px;
-      color: #fff;
-      font-size: 14px;
-      outline: none;
-    }
-    input[type="text"]:focus {
-      border-color: var(--primary);
-    }
-    button {
-      background: var(--primary);
-      color: #0d1117;
-      font-weight: 600;
-      border: none;
-      border-radius: 10px;
-      padding: 0 20px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    button:hover { background: var(--primary-hover); }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <header>
-      <div class="brand">
-        <div class="logo-badge">⚡</div>
-        <div>
-          <h1>Flazzstore RAG Assistant</h1>
-          <div class="subtitle">Cloudflare Workers AI + Vectorize + Telegram Bot</div>
-        </div>
-      </div>
-      <div class="tags">
-        <span class="tag">Cloudflare Edge</span>
-        <span class="tag telegram">Telegram Bot</span>
-      </div>
-    </header>
-
-    <div class="stats-bar">
-      <div class="stat-card">
-        <div class="stat-val">35 Tipe</div>
-        <div class="stat-lbl">Stok Casing iPhone (PDF)</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val">1.114 Produk</div>
-        <div class="stat-lbl">Katalog Casing Custom (Excel)</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val">1.150 Dokumen</div>
-        <div class="stat-lbl">Index Vector RAG</div>
-      </div>
-    </div>
-
-    <div class="chat-box">
-      <div class="messages" id="messages">
-        <div class="msg bot">
-          👋 Halo Kak! Saya adalah bot RAG Flazzstore yang siap menjawab seputar stok casing iPhone dan 1.100+ katalog casing hp custom. Coba tanyakan sesuatu! 😊
-        </div>
-      </div>
-
-      <div class="sync-banner" style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-        <div>
-          <div style="font-weight: 600; font-size: 14px; color: var(--primary);">⚡ Database Cloudflare Vectorize</div>
-          <div id="syncStatus" style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Index: <code>rag-tele-index</code> (1.150 dokumen siap sinkronisasi)</div>
-          <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-top: 8px; overflow: hidden; display: none;" id="syncBarContainer">
-            <div id="syncBar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.3s;"></div>
-          </div>
-        </div>
-        <button id="syncBtn" onclick="startVectorizeSync()" style="padding: 8px 16px; font-size: 12px;">Sync ke Cloudflare Vectorize</button>
-      </div>
-
-      <div class="chips">
-        <span class="chip" onclick="askChip(this)">Stok iPhone 15 Pro Max</span>
-        <span class="chip" onclick="askChip(this)">Casing Japan Girl untuk iPhone 16</span>
-        <span class="chip" onclick="askChip(this)">Casing Samsung S24 motif kayu</span>
-        <span class="chip" onclick="askChip(this)">Berapa stok iPhone 11 dan 13?</span>
-        <span class="chip" onclick="askChip(this)">Bisa custom gambar sendiri?</span>
-      </div>
-
-      <form class="input-row" onsubmit="handleSubmit(event)">
-        <input type="text" id="userInput" placeholder="Tanyakan stok atau desain casing..." autocomplete="off">
-        <button type="submit">Kirim</button>
-      </form>
-    </div>
-  </div>
-
-  <script>
-    const messagesEl = document.getElementById('messages');
-    const inputEl = document.getElementById('userInput');
-
-    function appendMessage(text, isUser, photoUrl) {
-      const msg = document.createElement('div');
-      msg.className = 'msg ' + (isUser ? 'user' : 'bot');
-      msg.innerHTML = text.replace(/\\n/g, '<br>');
-      if (photoUrl) {
-        const img = document.createElement('img');
-        img.src = photoUrl;
-        img.alt = 'Foto Produk';
-        msg.appendChild(img);
-      }
-      messagesEl.appendChild(msg);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-    }
-
-    function askChip(el) {
-      inputEl.value = el.innerText;
-      handleSubmit(new Event('submit'));
-    }
-
-    async function startVectorizeSync() {
-      const btn = document.getElementById('syncBtn');
-      const barContainer = document.getElementById('syncBarContainer');
-      const bar = document.getElementById('syncBar');
-      const status = document.getElementById('syncStatus');
-      btn.disabled = true;
-      barContainer.style.display = 'block';
-      status.innerText = 'Memulai sinkronisasi vektor ke Cloudflare...';
-      let batchIndex = 0;
-      let done = false;
-      while (!done) {
-        try {
-          const res = await fetch('/api/sync-vectorize', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ batchIndex, batchSize: 25 })
-          });
-          const data = await res.json();
-          if (!data.ok) {
-            status.innerText = 'Error: ' + (data.error || 'Gagal sinkron');
-            btn.disabled = false;
-            return;
-          }
-          batchIndex++;
-          done = data.done;
-          const pct = Math.min(100, Math.round((batchIndex / data.totalBatches) * 100));
-          bar.style.width = pct + '%';
-          status.innerText = 'Menyimpan batch ' + batchIndex + '/' + data.totalBatches + ' (' + pct + '%)...';
-        } catch(err) {
-          status.innerText = 'Gagal: ' + err.message;
-          btn.disabled = false;
-          return;
-        }
-      }
-      status.innerText = '✅ Berhasil! Semua 1.150 dokumen tersimpan di Cloudflare Vectorize.';
-      btn.innerText = 'Tersinkronisasi ✅';
-    }
-
-    async function handleSubmit(e) {
-      e.preventDefault();
-      const text = inputEl.value.trim();
-      if (!text) return;
-
-      appendMessage(text, true);
-      inputEl.value = '';
-
-      const loadingMsg = document.createElement('div');
-      loadingMsg.className = 'msg bot';
-      loadingMsg.innerText = 'Sedang mencari data... 🔍';
-      messagesEl.appendChild(loadingMsg);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-
-      try {
-        const res = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: text })
-        });
-        const data = await res.json();
-        messagesEl.removeChild(loadingMsg);
-        if (data.ok) {
-          appendMessage(data.answer, false, data.topProductPhoto);
-        } else {
-          appendMessage('Maaf, terjadi kesalahan: ' + (data.error || 'Unknown error'), false);
-        }
-      } catch (err) {
-        messagesEl.removeChild(loadingMsg);
-        appendMessage('Gagal terhubung ke server.', false);
-      }
-    }
-  </script>
-</body>
-</html>`;
-}
