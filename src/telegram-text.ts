@@ -26,7 +26,7 @@ export function welcomeMessage(): string {
   );
 }
 
-export function helpMessage(origin: string): string {
+export function helpMessage(_origin: string): string {
   return (
     `<b>Panduan Bot Flazzstore</b>\n\n` +
     `• /start — sambutan & contoh pertanyaan\n` +
@@ -34,12 +34,12 @@ export function helpMessage(origin: string): string {
     `• /stok iphone 15 pro — cek tipe tertentu\n` +
     `• /prompts — lima prompt tugas Tahap 1\n` +
     `   ↳ /restock, /normalisasi, /audit, /extract, /konsistensi\n` +
-    `Prompt Lab: ${origin}/prompts\n\n` +
+    `Prompt Lab: https://rag-tele.vercel.app/\n\n` +
     `Atau langsung tanyakan stok, motif casing, dan custom desain.`
   );
 }
 
-export function promptsMenuMessage(origin: string): string {
+export function promptsMenuMessage(_origin: string): string {
   return (
     `<b>Lima Prompt Tugas — Tahap 1</b>\n\n` +
     `1. /restock — Prioritas restock <i>(zero-shot)</i>\n` +
@@ -53,7 +53,7 @@ export function promptsMenuMessage(origin: string): string {
     `<code>/audit Judul listing... | Iphone 15, Iphone 14 Mini</code>\n` +
     `<code>/extract IP-JOYFUL-0001</code>\n` +
     `<code>/konsistensi total=48 stok=45 tambahan=2</code>\n\n` +
-    `<b>Prompt Lab (browser):</b> ${origin}/prompts\n\n` +
+    `<b>Prompt Lab (browser):</b> https://rag-tele.vercel.app/\n\n` +
     `Tanpa argumen, bot memakai data demo dari katalog/stok saat ini.`
   );
 }

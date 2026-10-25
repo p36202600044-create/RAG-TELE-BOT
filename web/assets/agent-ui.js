@@ -146,7 +146,7 @@
     var nav = [
       { id: 'chat', href: '/', label: 'Chat', sub: 'Tanya stok & katalog', icon: 'chat' },
       { id: 'monitor', href: '/monitor', label: 'Monitoring Stok', sub: 'Input & audit stok', icon: 'box' },
-      { id: 'prompts', href: '/prompts', label: 'Prompt Lab', sub: 'Lima prompt Tahap 1', icon: 'flask' }
+      { id: 'prompts', href: 'https://rag-tele.vercel.app/', label: 'Prompt Lab', sub: 'Lima prompt Tahap 1', icon: 'flask' }
     ];
 
     var navHtml = nav.map(function (item) {
@@ -233,7 +233,7 @@
     return [
       { id: 'nav-chat', label: 'Buka Chat', description: 'RAG assistant & stok', hint: 'G C', icon: 'chat', keywords: 'chat home assistant', run: function () { go('/'); } },
       { id: 'nav-monitor', label: 'Buka Monitoring Stok', description: 'Input dan audit stok', hint: 'G M', icon: 'box', keywords: 'monitor stok gudang inventory', run: function () { go('/monitor'); } },
-      { id: 'nav-prompts', label: 'Buka Prompt Lab', description: 'Lima prompt Tahap 1', hint: 'G P', icon: 'flask', keywords: 'prompt lab evaluasi', run: function () { go('/prompts'); } },
+      { id: 'nav-prompts', label: 'Buka Prompt Lab', description: 'Lima prompt Tahap 1', hint: 'G P', icon: 'flask', keywords: 'prompt lab evaluasi', run: function () { window.open('https://rag-tele.vercel.app/', '_blank', 'noopener'); } },
       { id: 'new-chat', label: 'Chat baru', description: 'Mulai percakapan bersih', hint: 'N', icon: 'plus', keywords: 'new chat bersih', run: newChat },
       { id: 'toggle-theme', label: 'Ganti tema', description: 'Terang / gelap', hint: 'T', icon: 'sun', keywords: 'theme tema dark light', run: toggleTheme },
       { id: 'shortcuts', label: 'Keyboard shortcut', description: 'Lihat semua pintasan', hint: '?', icon: 'keyboard', keywords: 'shortcut keyboard bantuan', run: openShortcuts },
@@ -480,7 +480,7 @@
       clearTimeout(state.gTimer);
       if (navKey === 'c') { event.preventDefault(); go('/'); return; }
       if (navKey === 'm') { event.preventDefault(); go('/monitor'); return; }
-      if (navKey === 'p') { event.preventDefault(); go('/prompts'); return; }
+      if (navKey === 'p') { event.preventDefault(); window.open('https://rag-tele.vercel.app/', '_blank', 'noopener'); return; }
       return;
     }
 
