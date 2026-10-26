@@ -98,7 +98,7 @@ def load_papers() -> List[Dict[str, Any]]:
 
 
 def generate_gap_matrix_table(papers: List[Dict[str, Any]]) -> str:
-    """Format tabel Literature GAP Matrix dalam format Markdown tabel komparatif."""
+    """Format tabel Literature GAP Matrix dalam format Markdown tabel komparatif tanpa emoji."""
     lines = [
         "| No | Penulis & Tahun | Judul Paper & Publisher | Domain | Masalah Utama | Metode & Arsitektur RAG | Dataset & Metrik | Hasil & Temuan Utama | Research GAP (Kelemahan) | Solusi Riset Masa Depan |",
         "|:---:|:---|:---|:---:|:---|:---|:---|:---|:---|:---|",
@@ -106,23 +106,23 @@ def generate_gap_matrix_table(papers: List[Dict[str, Any]]) -> str:
 
     for idx, p in enumerate(papers, start=1):
         author_year = f"**{p['authors'].split(',')[0]} et al.** ({p['year']})"
-        title_pub = f"*{p['title']}*<br><br>🏛️ **{p['publisher']}** ({p['venue']})"
+        title_pub = f"*{p['title']}*<br><br>**Publisher**: {p['publisher']}<br>**Venue**: {p['venue']}<br>**Link**: [{p.get('id', '')}]({p.get('doi_or_url', '')})"
         domain = f"`{p['domain']}`"
         problem = p['problem_statement'].replace("\n", " ")
         
         m = p['methodology']
         method = (
-            f"• **Retrieval**: {m.get('retrieval_type', '-')}<br>"
-            f"• **Embedding**: {m.get('embedding_model', '-')}<br>"
-            f"• **LLM**: {m.get('generator_llm', '-')}<br>"
-            f"• **Vector DB**: {m.get('vector_storage', '-')}"
+            f"- **Retrieval**: {m.get('retrieval_type', '-')}<br>"
+            f"- **Embedding**: {m.get('embedding_model', '-')}<br>"
+            f"- **LLM**: {m.get('generator_llm', '-')}<br>"
+            f"- **Vector DB**: {m.get('vector_storage', '-')}"
         )
         
         d = p['dataset_and_metrics']
-        dataset = f"• **Data**: {d.get('dataset', '-')}<br>• **Metrik**: {d.get('metrics', '-')}"
+        dataset = f"- **Data**: {d.get('dataset', '-')}<br>- **Metrik**: {d.get('metrics', '-')}"
         results = p['key_results'].replace("\n", " ")
-        gap = f"⚠️ **{p['limitations_and_gap'].replace(chr(10), ' ')}**"
-        future = f"💡 {p['future_directions'].replace(chr(10), ' ')}"
+        gap = f"**Kelemahan**: {p['limitations_and_gap'].replace(chr(10), ' ')}"
+        future = f"**Rekomendasi**: {p['future_directions'].replace(chr(10), ' ')}"
 
         row = f"| {idx} | {author_year} | {title_pub} | {domain} | {problem} | {method} | {dataset} | {results} | {gap} | {future} |"
         lines.append(row)
@@ -131,7 +131,7 @@ def generate_gap_matrix_table(papers: List[Dict[str, Any]]) -> str:
 
 
 def export_csv(papers: List[Dict[str, Any]], output_path: str):
-    """Ekspor Literature GAP Matrix ke CSV untuk submission Kulino / Excel."""
+    """Ekspor Literature GAP Matrix ke CSV untuk submission Kulino / Excel tanpa emoji."""
     fieldnames = [
         "No",
         "ID_Paper",
@@ -184,32 +184,30 @@ def export_csv(papers: List[Dict[str, Any]], output_path: str):
 def generate_full_markdown(papers: List[Dict[str, Any]]) -> str:
     matrix_table = generate_gap_matrix_table(papers)
     total_papers = len(papers)
-    domains = Counter(p['domain'] for p in papers)
-    domain_summary = ", ".join([f"{k}: {v} paper" for k, v in domains.items()])
 
-    return f"""# 📚 LITERATURE GAP MATRIX: RETRIEVAL-AUGMENTED GENERATION (RAG)
-**Mata Kuliah / Tugas**: Tugas Tambahan Awal RTM 2 — Universitas Dian Nuswantoro (UDINUS)  
+    return f"""# LITERATURE GAP MATRIX: RETRIEVAL-AUGMENTED GENERATION (RAG)
+**Mata Kuliah / Tugas**: Tugas Tambahan Awal RTM 2 - Fakultas Teknik Universitas Dian Nuswantoro (UDINUS)  
 **Domain Terpilih**: Industri (E-Commerce, Retail Inventory & Multichannel Logistics) dengan Komparasi Lintas Domain (Keuangan & Kesehatan)  
 **URL Repository Source Code Pipeline RAG**: [https://github.com/p36202600044-create/RAG-TELE-BOT](https://github.com/p36202600044-create/RAG-TELE-BOT)  
-**Jumlah Artikel Ilmiah Dianalisis**: {total_papers} Paper Bereputasi Internasional (IEEE, ACM, Springer Nature, Elsevier, NeurIPS, Microsoft Research)
+**Jumlah Artikel Ilmiah Dianalisis**: {total_papers} Paper Bereputasi Internasional (IEEE, ACM, Elsevier, NEJM AI, NeurIPS, arXiv)
 
 ---
 
 ## 1. Ringkasan Eksekutif & Taksonomi GAP Riset
 
-Berdasarkan analisis sistematis terhadap {total_papers} artikel ilmiah terkini (2020–2024), teridentifikasi **3 Research Gap Kritis** dalam penerapan RAG di dunia industri ritel dan e-commerce:
+Berdasarkan analisis sistematis terhadap {total_papers} artikel ilmiah terkini (2020-2024), teridentifikasi **3 Research Gap Kritis** dalam penerapan RAG di dunia industri ritel dan e-commerce:
 
 1. **Gap Sinkronisasi Vektor vs. Mutasi Database Operasional (Real-Time ACID Gap)**:
-   - *Temuan*: Mayoritas arsitektur RAG konvensional (Lewis et al. 2020, Gao et al. 2024) mengasumsikan basis data vektor bersifat statis atau di-refresh secara batch harian/mingguan.
+   - *Temuan*: Mayoritas arsitektur RAG konvensional (Lewis et al. 2020, Gao et al. 2023) mengasumsikan basis data vektor bersifat statis atau di-refresh secara batch berkala.
    - *Dampak di Industri*: Terjadi halusinasi stok (menjawab barang ready padahal unit fisik di gudang telah habis terjual).
    - *Solusi Proyek Ini*: Memadukan **Cloudflare D1 (Relational SQL ACID)** sebagai ground-truth kuantitatif dengan **Cloudflare Vectorize** yang disinkronkan secara otomatis dan inkremental saat terjadi mutasi stok di endpoint `/api/stocks/adjust`.
 
 2. **Gap Integrasi Saluran Interaksi Pengguna (Omnichannel & Messaging Gap)**:
-   - *Temuan*: Paper e-commerce seperti Chen et al. (SIGIR 2024) dan Li et al. (IEEE Access 2024) fokus pada antarmuka web pencarian formal, mengabaikan saluran pesan instan (Telegram, WhatsApp) yang mendominasi transaksi sosial di Asia Tenggara.
+   - *Temuan*: Paper e-commerce seperti Rokon et al. (Walmart, 2024) dan Xu et al. (Alibaba, 2024) fokus pada antarmuka web pencarian formal, mengabaikan saluran pesan instan (Telegram, WhatsApp) yang mendominasi transaksi sosial di Asia Tenggara.
    - *Solusi Proyek Ini*: Pipeline RAG serverless berbasis Webhook Telegram terhubung langsung dengan backend Worker berlatensi rendah (<1.5 detik per respons) tanpa server GPU mandiri.
 
 3. **Gap Ketiadaan Audit Trail dan Validasi Mutasi Multi-Admin**:
-   - *Temuan*: Paper logistik (Patel et al. 2024, Elsevier) tidak menyediakan antarmuka terotentikasi bagi staf gudang untuk mencatat mutasi stok (delta, previous, new) dengan riwayat jejak audit (audit trail).
+   - *Temuan*: Paper logistik dan layanan pelanggan (Xu, Cruz, et al. 2024) tidak menyediakan antarmuka terotentikasi bagi staf gudang untuk mencatat mutasi stok (delta, previous, new) dengan riwayat jejak audit (audit trail).
    - *Solusi Proyek Ini*: Halaman dashboard monitoring `/monitor` dengan HTTP Basic Auth, pencatatan mutasi di tabel `stock_mutations`, dan integrasi live RAG.
 
 ---
@@ -222,12 +220,12 @@ Berdasarkan analisis sistematis terhadap {total_papers} artikel ilmiah terkini (
 
 ## 3. Matriks Pemetaan GAP Riset ke Fitur Solusi Proyek (Novelty Mapping)
 
-| No | Research Gap yang Diidentifikasi pada Literatur | Paper Rujukan | Solusi & Inovasi yang Diimplementasikan pada Proyek `RAG-TELE-BOT` | File / Modul Implementasi |
+| No | Research Gap yang Diidentifikasi pada Literatur | Paper Rujukan | Solusi & Inovasi yang Diimplementasikan pada Proyek RAG-TELE-BOT | File / Modul Implementasi |
 |:---:|:---|:---|:---|:---|
-| **1** | Halusinasi ketersediaan stok fisik akibat jeda sinkronisasi indeks vektor | Chen et al. (ACM SIGIR 2024), Gao et al. (IEEE TKDE 2024) | **Hybrid Injection**: Pengecekan nama tipe secara leksikal & injeksi langsung status stok aktual dari database D1 sebelum/bersama prompt LLM | [`src/rag.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/rag.ts), [`src/stock.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/stock.ts) |
-| **2** | Tidak adanya jejak audit mutasi stok terstruktur (audit trail) pada sistem RAG e-commerce | Patel et al. (Elsevier 2024), Zhang et al. (Springer 2024) | Tabel `stock_mutations` pada Cloudflare D1 yang mencatat timestamp, delta, saldo awal/akhir, aktor admin, dan catatan pergerakan barang | [`migrations/0001_stock.sql`](file:///Volumes/RYUARNOVI/rag-tele/migrations/0001_stock.sql), [`src/stock.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/stock.ts) |
-| **3** | Tingginya biaya operasional dan latensi server GPU cloud dedicated untuk UMKM | Lewis et al. (NeurIPS 2020), Li et al. (IEEE Access 2024) | **Serverless Edge RAG**: Memanfaatkan Cloudflare Workers AI (`@cf/baai/bge-m3` + `@cf/meta/llama-3.3-70b`) dan Vectorize dengan biaya serverless mendekati nol | [`wrangler.jsonc`](file:///Volumes/RYUARNOVI/rag-tele/wrangler.jsonc), [`src/index.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/index.ts) |
-| **4** | Ketiadaan bot interaktif mobile untuk pembeli dan admin toko | Chen et al. (ACM SIGIR 2024) | Bot Telegram interaktif via Webhook HTTPS instan dengan dukungan slash commands (`/stok`, `/prompts`, `/restock`, dll) | [`src/telegram.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/telegram.ts), [`src/telegram-text.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/telegram-text.ts) |
+| **1** | Halusinasi ketersediaan stok fisik akibat jeda sinkronisasi indeks vektor | Rokon et al. (Walmart 2024), Xu et al. (Alibaba 2024) | **Hybrid Injection**: Pengecekan nama tipe secara leksikal & injeksi langsung status stok aktual dari database D1 sebelum/bersama prompt LLM | [`src/rag.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/rag.ts), [`src/stock.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/stock.ts) |
+| **2** | Tidak adanya jejak audit mutasi stok terstruktur (audit trail) pada sistem RAG e-commerce | Xu, Cruz, et al. (ACM SIGIR 2024), Heredia-Alvaro (Elsevier 2024) | Tabel `stock_mutations` pada Cloudflare D1 yang mencatat timestamp, delta, saldo awal/akhir, aktor admin, dan catatan pergerakan barang | [`migrations/0001_stock.sql`](file:///Volumes/RYUARNOVI/rag-tele/migrations/0001_stock.sql), [`src/stock.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/stock.ts) |
+| **3** | Tingginya biaya operasional dan latensi server GPU cloud dedicated untuk UMKM | Lewis et al. (NeurIPS 2020), Gao et al. (2023) | **Serverless Edge RAG**: Memanfaatkan Cloudflare Workers AI (`@cf/baai/bge-m3` + `@cf/meta/llama-3.3-70b`) dan Vectorize dengan biaya serverless mendekati nol | [`wrangler.jsonc`](file:///Volumes/RYUARNOVI/rag-tele/wrangler.jsonc), [`src/index.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/index.ts) |
+| **4** | Ketiadaan bot interaktif mobile untuk pembeli dan admin toko | Xu et al. (Alibaba 2024) | Bot Telegram interaktif via Webhook HTTPS instan dengan dukungan slash commands (`/stok`, `/prompts`, `/restock`, dll) | [`src/telegram.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/telegram.ts), [`src/telegram-text.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/telegram-text.ts) |
 | **5** | Inkonsistensi penamaan variasi casing marketplace (Shopee) terhadap nama fisik Apple | Dataset Shopee & PDF Toko Flazzstore | Modul normalisasi variasi Few-Shot & Audit Judul terhadap stok (Prompt 2 & 3 Tahap 1) | [`web/prompts.html`](file:///Volumes/RYUARNOVI/rag-tele/web/prompts.html), [`src/prompts.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/prompts.ts) |
 
 ---
@@ -248,12 +246,12 @@ python3 scripts/pipeline_gap_matrix.py --summary
 ```
 
 ---
-*Dibuat untuk Tugas Tambahan Awal RTM 2 — Fakultas Teknik Universitas Dian Nuswantoro (UDINUS)*
+*Dibuat untuk Tugas Tambahan Awal RTM 2 - Fakultas Teknik Universitas Dian Nuswantoro (UDINUS)*
 """
 
 
 def generate_kulino_submission_markdown(papers: List[Dict[str, Any]]) -> str:
-    """Template dokumen formal khusus diunggah ke portal Kulino UDINUS."""
+    """Template dokumen formal khusus diunggah ke portal Kulino UDINUS tanpa emoji."""
     matrix_table = generate_gap_matrix_table(papers)
     return f"""# LAPORAN TUGAS TAMBAHAN: AWAL RTM 2
 ## FAKULTAS TEKNIK - UNIVERSITAS DIAN NUSWANTORO (UDINUS)
@@ -265,7 +263,7 @@ def generate_kulino_submission_markdown(papers: List[Dict[str, Any]]) -> str:
 - **Topik Tugas**: Pembuatan Literature GAP Matrix & Pipeline RAG Otomatis
 - **Domain Terpilih**: **Industri (E-Commerce, Ritel & Inventory Management)** *(Sesuai Tugas Pertama)*
 - **URL Source Code Pipeline RAG di GitHub**:  
-  👉 **[https://github.com/p36202600044-create/RAG-TELE-BOT](https://github.com/p36202600044-create/RAG-TELE-BOT)** 👈
+  [https://github.com/p36202600044-create/RAG-TELE-BOT](https://github.com/p36202600044-create/RAG-TELE-BOT)
 - **Jadwal Presentasi**: Minggu ke-7
 
 ---
@@ -273,7 +271,7 @@ def generate_kulino_submission_markdown(papers: List[Dict[str, Any]]) -> str:
 ### I. LATAR BELAKANG DOMAIN & TUJUAN
 Pada tugas pertama, telah dikembangkan sistem Retrieval-Augmented Generation (RAG) untuk toko ritel smartphone casing **Flazzstore** yang terintegrasi dengan bot Telegram, database katalog Shopee (1.114 item), dan data stok fisik casing iPhone (35 model). 
 
-Untuk memenuhi **Tugas Tambahan Awal RTM 2**, dilakukan studi literatur ilmiah komprehensif terhadap **10 artikel ilmiah bereputasi internasional** (IEEE, ACM, Springer Nature, Elsevier, NeurIPS, dan Microsoft Research) untuk memetakan keterbatasan metode penelitian saat ini (**Research GAPs**) serta membuktikan kebaruan (*novelty*) dari arsitektur pipeline RAG yang dikembangkan.
+Untuk memenuhi **Tugas Tambahan Awal RTM 2**, dilakukan studi literatur ilmiah komprehensif terhadap **10 artikel ilmiah bereputasi internasional** (IEEE, ACM, Elsevier, NEJM AI, NeurIPS, dan arXiv) untuk memetakan keterbatasan metode penelitian saat ini (**Research GAPs**) serta membuktikan kebaruan (*novelty*) dari arsitektur pipeline RAG yang dikembangkan.
 
 ---
 
@@ -301,7 +299,7 @@ Dari matriks literatur di atas, ditemukan 3 kesenjangan utama dalam penerapan RA
    - *Solusi Proyek*: Kami menerapkan arsitektur **Hybrid Transactional/Vector** di Cloudflare Workers: database ACID (D1) mencatat mutasi stok secara instan, dan memicu sinkronisasi inkremental ke Cloudflare Vectorize (`@cf/baai/bge-m3`).
 
 2. **Kesenjangan Antarmuka Operasional & Audit Trail (Operational Traceability Gap)**:
-   - *Masalah*: Penelitian sebelumnya (Chen et al. 2024, Patel et al. 2024) hanya berfokus pada evaluasi akurasi jawaban LLM, namun mengabaikan kebutuhan pencatatan mutasi (siapa admin yang mengubah stok, kapan, dan berapa delta perubahannya).
+   - *Masalah*: Penelitian sebelumnya (Xu et al. 2024, Xu, Cruz, et al. 2024) hanya berfokus pada evaluasi akurasi jawaban LLM, namun mengabaikan kebutuhan pencatatan mutasi (siapa admin yang mengubah stok, kapan, dan berapa delta perubahannya).
    - *Solusi Proyek*: Disediakan dashboard `/monitor` terotentikasi dengan tabel riwayat `stock_mutations`, sehingga setiap jawaban bot Telegram dapat dipertanggungjawabkan ke data fisik gudang.
 
 3. **Kesenjangan Efisiensi Infrastruktur (Serverless Edge vs. Dedicated GPU)**:
@@ -325,12 +323,12 @@ python3 scripts/pipeline_gap_matrix.py --query "Apa limitasi utama RAG pada indu
 ```
 
 ---
-*Laporan ini disusun untuk memenuhi kelengkapan Tugas Tambahan Awal RTM 2 — Fakultas Teknik Universitas Dian Nuswantoro.*
+*Laporan ini disusun untuk memenuhi kelengkapan Tugas Tambahan Awal RTM 2 - Fakultas Teknik Universitas Dian Nuswantoro.*
 """
 
 
 def generate_printable_html(papers: List[Dict[str, Any]]) -> str:
-    """Hasilkan berkas HTML siap cetak/simpan PDF untuk unggahan Kulino."""
+    """Hasilkan berkas HTML siap cetak/simpan PDF untuk unggahan Kulino tanpa emoji."""
     rows_html = []
     for idx, p in enumerate(papers, start=1):
         m = p['methodology']
@@ -339,7 +337,7 @@ def generate_printable_html(papers: List[Dict[str, Any]]) -> str:
         <tr>
           <td style="text-align:center; font-weight:bold;">{idx}</td>
           <td><strong>{p['authors'].split(',')[0]} et al.</strong><br><span style="color:#64748b;">({p['year']})</span></td>
-          <td><em>{p['title']}</em><br><br><span class="badge badge-pub">{p['publisher']}</span><br><small style="color:#475569;">{p['venue']}</small></td>
+          <td><em>{p['title']}</em><br><br><span class="badge badge-pub">{p['publisher']}</span><br><small style="color:#475569;">{p['venue']}</small><br><small><a href="{p['doi_or_url']}" target="_blank">Tautan Sumber</a></small></td>
           <td><span class="badge badge-domain">{p['domain']}</span></td>
           <td>{p['problem_statement']}</td>
           <td>
@@ -433,14 +431,14 @@ def generate_printable_html(papers: List[Dict[str, Any]]) -> str:
 <body>
   <div class="header">
     <h1>FAKULTAS TEKNIK - UNIVERSITAS DIAN NUSWANTORO (UDINUS)</h1>
-    <p><strong>TUGAS TAMBAHAN: AWAL RTM 2 — LITERATURE GAP MATRIX RETRIEVAL-AUGMENTED GENERATION (RAG)</strong></p>
+    <p><strong>TUGAS TAMBAHAN: AWAL RTM 2 - LITERATURE GAP MATRIX RETRIEVAL-AUGMENTED GENERATION (RAG)</strong></p>
     <p>Domain Sesuai Tugas Pertama: <strong>Industri (E-Commerce, Ritel & Manajemen Inventori)</strong></p>
   </div>
 
   <div class="meta-box">
     <strong>URL Repository Source Code Pipeline RAG di GitHub:</strong><br>
-    👉 <a href="https://github.com/p36202600044-create/RAG-TELE-BOT" target="_blank">https://github.com/p36202600044-create/RAG-TELE-BOT</a> 👈<br><br>
-    <em>Catatan Pengunggahan Kulino: Dokumen ini memuat Literature GAP Matrix 10 artikel ilmiah bereputasi (IEEE, ACM, Springer Nature, Elsevier, NeurIPS) beserta bukti implementasi source code pipeline RAG.</em>
+    <a href="https://github.com/p36202600044-create/RAG-TELE-BOT" target="_blank">https://github.com/p36202600044-create/RAG-TELE-BOT</a><br><br>
+    <em>Catatan Pengunggahan Kulino: Dokumen ini memuat Literature GAP Matrix 10 artikel ilmiah bereputasi (IEEE, ACM, Elsevier, NEJM AI, NeurIPS, arXiv) beserta bukti implementasi source code pipeline RAG.</em>
   </div>
 
   <h2 class="section-title">Tabel Literature GAP Matrix</h2>
@@ -478,13 +476,13 @@ def generate_printable_html(papers: List[Dict[str, Any]]) -> str:
 
 
 def interactive_query(papers: List[Dict[str, Any]], query: str):
-    """Jalankan query RAG terhadap korpus literatur dan sintesis jawabannya."""
+    """Jalankan query RAG terhadap korpus literatur dan sintesis jawabannya tanpa emoji."""
     retriever = BM25Retriever(papers)
     results = retriever.retrieve(query, top_k=3)
 
-    print(f"\n🔍 [QUERY RAG LITERATUR]: \"{query}\"")
+    print(f"\n[QUERY RAG LITERATUR]: \"{query}\"")
     print("=" * 80)
-    print("📚 [RETRIEVED CITATIONS]:")
+    print("[RETRIEVED CITATIONS]:")
     for rank, (p, score) in enumerate(results, start=1):
         first_author = p['authors'].split(',')[0]
         print(f"  {rank}. [{p['id']}] {first_author} et al. ({p['year']}) - \"{p['title']}\"")
@@ -493,7 +491,7 @@ def interactive_query(papers: List[Dict[str, Any]], query: str):
     print("-" * 80)
 
     # RAG Reasoning Synthesis
-    print("💡 [RAG SYNTHESIS JAWABAN AKADEMIS]:")
+    print("[RAG SYNTHESIS JAWABAN AKADEMIS]:")
     citations = [f"[{p['id']}]" for p, _ in results]
     top_p = results[0][0]
     
@@ -525,44 +523,44 @@ def main():
         return
 
     if args.summary:
-        print(f"\n📊 TOTAL KORPUS ARTIKEL ILMIAH: {len(papers)} Paper")
+        print(f"\nTOTAL KORPUS ARTIKEL ILMIAH: {len(papers)} Paper")
         domains = Counter(p['domain'] for p in papers)
         for d, count in domains.items():
-            print(f"  • {d}: {count} paper")
+            print(f"  - {d}: {count} paper")
         publishers = Counter(p['publisher'] for p in papers)
-        print("\n🏛️ DISTRIBUSI PUBLISHER:")
+        print("\nDISTRIBUSI PUBLISHER:")
         for pub, count in publishers.items():
-            print(f"  • {pub}: {count} paper")
+            print(f"  - {pub}: {count} paper")
         print()
         return
 
     # Default action: Generate all matrix files
-    print(f"🚀 Menjalankan Pipeline RAG GAP Matrix...")
-    print(f"📖 Membaca {len(papers)} artikel ilmiah dari {DATA_PAPERS_PATH}")
+    print(f"Menjalankan Pipeline RAG GAP Matrix...")
+    print(f"Membaca {len(papers)} artikel ilmiah dari {DATA_PAPERS_PATH}")
 
     # 1. Output Markdown Utama
     full_md = generate_full_markdown(papers)
     with open(OUTPUT_MD_PATH, "w", encoding="utf-8") as f:
         f.write(full_md)
-    print(f"✅ Berhasil membuat Markdown GAP Matrix: {OUTPUT_MD_PATH}")
+    print(f"Berhasil membuat Markdown GAP Matrix: {OUTPUT_MD_PATH}")
 
     # 2. Output CSV Spreadsheet
     export_csv(papers, OUTPUT_CSV_PATH)
-    print(f"✅ Berhasil mengekspor CSV GAP Matrix: {OUTPUT_CSV_PATH}")
+    print(f"Berhasil mengekspor CSV GAP Matrix: {OUTPUT_CSV_PATH}")
 
     # 3. Output Dokumen Kulino UDINUS
     kulino_md = generate_kulino_submission_markdown(papers)
     with open(OUTPUT_KULINO_PATH, "w", encoding="utf-8") as f:
         f.write(kulino_md)
-    print(f"✅ Berhasil membuat Laporan Pengunggahan Kulino: {OUTPUT_KULINO_PATH}")
+    print(f"Berhasil membuat Laporan Pengunggahan Kulino: {OUTPUT_KULINO_PATH}")
 
     # 4. Output HTML Siap Cetak / PDF
     printable_html = generate_printable_html(papers)
     with open(OUTPUT_HTML_PATH, "w", encoding="utf-8") as f:
         f.write(printable_html)
-    print(f"✅ Berhasil membuat Halaman HTML Siap Cetak/PDF: {OUTPUT_HTML_PATH}")
+    print(f"Berhasil membuat Halaman HTML Siap Cetak/PDF: {OUTPUT_HTML_PATH}")
 
-    print("\n🎉 Pipeline selesai dijalankan dengan sempurna!")
+    print("\nPipeline selesai dijalankan dengan bersih dan bebas emoji.")
 
 
 if __name__ == "__main__":

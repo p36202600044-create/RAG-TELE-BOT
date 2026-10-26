@@ -1,9 +1,9 @@
-# # RAG-TELE-BOT
+# RAG-TELE-BOT
 
 > **Sistem RAG (Retrieval-Augmented Generation) Terintegrasi Cloudflare (Workers AI + Vectorize + D1) & Bot Telegram**  
 > Dilengkapi Pipeline Otomatis Generator **Literature GAP Matrix** (Tugas Tambahan Awal RTM 2 - Fakultas Teknik UDINUS).
 
-## 🔗 Akses Cepat & Deployment Aktif
+## Akses Cepat & Deployment Aktif
 
 - **Bot Telegram**: [t.me/ragteleshofiyanbot](https://t.me/ragteleshofiyanbot)
 - **Web Chat / Uji RAG**: [rag-tele-cf.rizki210605.workers.dev](https://rag-tele-cf.rizki210605.workers.dev/)
@@ -16,7 +16,7 @@
 
 ---
 
-## 🎓 Tugas Tambahan: Awal RTM 2 (Fakultas Teknik UDINUS)
+## Tugas Tambahan: Awal RTM 2 (Fakultas Teknik UDINUS)
 
 Untuk memenuhi instruksi tugas perkuliahan **Fakultas Teknik Universitas Dian Nuswantoro**:
 1. **Literature GAP Matrix**: Mengkaji 10 artikel ilmiah bereputasi internasional (IEEE, ACM, Springer Nature, Elsevier, NeurIPS) pada domain **Industri (E-Commerce, Ritel, Inventori)** dengan perbandingan lintas domain (Keuangan & Kesehatan).
@@ -37,7 +37,7 @@ python3 scripts/pipeline_gap_matrix.py --summary
 
 ---
 
-## 📊 Sumber Data (Resource)
+## Sumber Data (Resource)
 
 Sistem ini mengekstrak dan memproses dua sumber data utama:
 1. **`resource/STOCK CASING - iPhone.pdf`**  
@@ -49,7 +49,7 @@ Sistem ini mengekstrak dan memproses dua sumber data utama:
 
 ---
 
-## 🏗️ Arsitektur Sistem
+## Arsitektur Sistem
 
 ```
                  +--------------------------------------------------+
@@ -91,7 +91,7 @@ Sistem ini mengekstrak dan memproses dua sumber data utama:
 
 ---
 
-## ⚡ Fitur Utama
+## Fitur Utama
 
 1. **Pengecekan Stok Real-time**: Menjawab pertanyaan stok casing iPhone secara presisi berdasarkan dokumen PDF gudang.
 2. **Pencarian Katalog Desain**: Menemukan motif (Japan Girl, Wood Art, Mickey Mouse, Joyful Doodle, Otomotif, dll) dari 1.114 produk.
@@ -107,7 +107,7 @@ Sistem ini mengekstrak dan memproses dua sumber data utama:
 
 ---
 
-## 🚀 Panduan Penggunaan Cepat
+## Panduan Penggunaan Cepat
 
 ### 1. Persiapan Awal
 Jalankan ingestion untuk mengekstrak data dari `resource/` (sudah diekstrak):
@@ -235,7 +235,7 @@ Respons berisi `answer`, `sources`, dan `topProductPhoto` (jika ada foto produk 
 
 ---
 
-## ☁️ Panduan Deploy ke Cloudflare Workers & Vectorize
+## Panduan Deploy ke Cloudflare Workers & Vectorize
 
 ### Langkah 1: Login ke Cloudflare
 ```bash
@@ -303,7 +303,7 @@ Cek status webhook:
 curl "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/getWebhookInfo"
 ```
 
-Selesai! Sekarang Telegram Bot Anda aktif 24/7 di serverless Cloudflare Edge tanpa perlu server menyala, dan stok bisa dikelola dari halaman `/monitor`. 🎉
+Selesai! Sekarang Telegram Bot Anda aktif 24/7 di serverless Cloudflare Edge tanpa perlu server menyala, dan stok bisa dikelola dari halaman `/monitor`. 
 
 ---
 
@@ -349,7 +349,7 @@ Ganti URL bila Worker dipindah ke domain lain, lalu redeploy Vercel. Worker suda
 
 ---
 
-## 📂 Struktur Proyek
+## Struktur Proyek
 
 ```
 rag-tele/

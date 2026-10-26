@@ -7,7 +7,7 @@
     "venue": "Advances in Neural Information Processing Systems (NeurIPS 2020), Vol. 33, pp. 9459-9474",
     "publisher": "NeurIPS / Curran Associates",
     "doi_or_url": "https://arxiv.org/abs/2005.11401",
-    "domain": "Umum & Industri (Knowledge Retrieval)",
+    "domain": "Industri & Fondasi RAG (Knowledge Retrieval)",
     "problem_statement": "Model bahasa berbasis transformer parametrik murni rentan terhadap halusinasi pengetahuan faktual dan tidak mampu memperbarui basis pengetahuan dinamis tanpa proses fine-tuning ulang yang mahal secara komputasi.",
     "methodology": {
       "retrieval_type": "Dense Passage Retrieval (DPR) berbasis Bi-Encoder",
@@ -32,7 +32,7 @@
     "venue": "arXiv preprint arXiv:2312.10997 (2023)",
     "publisher": "arXiv",
     "doi_or_url": "https://arxiv.org/abs/2312.10997",
-    "domain": "Industri & Enterprise Software",
+    "domain": "Industri & Enterprise Software Architecture",
     "problem_statement": "Kurangnya taksonomi formal dan standardisasi arsitektur RAG (Naive vs Advanced vs Modular) dalam menangani tantangan retrieval precision, recall, context relevance, dan generation faithfulness pada skenario enterprise.",
     "methodology": {
       "retrieval_type": "Pre-retrieval (query rewrite), In-retrieval (hybrid dense-sparse + reranking), Post-retrieval (context compression & chunk routing)",
@@ -101,10 +101,35 @@
   },
   {
     "id": "PAPER-05",
+    "authors": "de Freitas, B. A. T., & Lotufo, R. de A.",
+    "year": 2024,
+    "title": "Retail-GPT: leveraging Retrieval Augmented Generation (RAG) for building E-commerce Chat Assistants",
+    "venue": "arXiv preprint arXiv:2408.08925 (State University of Campinas, 2024)",
+    "publisher": "arXiv",
+    "doi_or_url": "https://arxiv.org/abs/2408.08925",
+    "domain": "Industri (UMKM & E-Commerce Conversational Assistant)",
+    "problem_statement": "Sebagian besar platform e-commerce UMKM dan ritel mandiri mengandalkan interaksi pencarian statis berbasis kata kunci dan filter kaku, yang gagal memahami maksud belanja bahasa alami pembeli dan ketersediaan stok produk secara interaktif.",
+    "methodology": {
+      "retrieval_type": "Conversational RAG for Catalog Querying and Real-Time Availability Check",
+      "embedding_model": "Sentence Transformers / Text Embeddings",
+      "generator_llm": "Open-Source Instruction-Tuned LLMs (Llama-based)",
+      "vector_storage": "Chroma / FAISS Catalog Vector Index",
+      "architecture": "Chat Interface -> Natural Language Intent Parser -> RAG Catalog & Stock Retriever -> Conversational Sales Agent -> Cart Action"
+    },
+    "dataset_and_metrics": {
+      "dataset": "E-Commerce Retail Product Catalog and Multi-turn Customer Shopping Dialogues",
+      "metrics": "Intent Recognition Accuracy, Stock Check Correctness, User Engagement Rate, Response Latency"
+    },
+    "key_results": "Membuktikan bahwa model RAG open-source dapat diimplementasikan sebagai asisten belanja virtual yang mampu menafsirkan preferensi pembeli, mengecek stok barang secara akurat, dan memandu transaksi belanja tanpa bergantung pada plugin platform komersial berbayar mahal.",
+    "limitations_and_gap": "Model belum terhubung ke antarmuka aplikasi perpesanan instan populer (Telegram/WhatsApp) yang memiliki traffic pembeli UMKM tertinggi; belum memiliki modul audit trail mutasi inventori.",
+    "future_directions": "Integrasi bot pesan instan melalui webhook serverless edge dan penghubungan langsung ke database stok gudang toko fisik."
+  },
+  {
+    "id": "PAPER-06",
     "authors": "Xu, Z., Cruz, M. J., Guevara, M., Wang, T., Deshpande, M., Wang, X., & Li, Z.",
     "year": 2024,
     "title": "Retrieval-Augmented Generation with Knowledge Graphs for Customer Service Question Answering",
-    "venue": "ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR 2024 eCom / Industry Track) / arXiv:2404.17723",
+    "venue": "ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR 2024 eCom Track) / arXiv:2404.17723",
     "publisher": "ACM / arXiv",
     "doi_or_url": "https://arxiv.org/abs/2404.17723",
     "domain": "Industri (Customer Service & Support QA)",
@@ -125,7 +150,7 @@
     "future_directions": "Penyederhanaan struktur graf menggunakan metadata relasional tabel (SQL/D1) yang lebih ringan dan ramah biaya serverless."
   },
   {
-    "id": "PAPER-06",
+    "id": "PAPER-07",
     "authors": "Edge, D., Trinh, H., Cheng, N., Bradley, J., Chao, A., Mody, J., Truitt, S., & Larson, J.",
     "year": 2024,
     "title": "From Local to Global: A Graph RAG Approach to Query-Focused Summarization",
@@ -150,14 +175,39 @@
     "future_directions": "Lightweight GraphRAG yang menggabungkan struktur skema relasional tabel (D1/SQLite) dengan semantic routing tanpa perlu ekstraksi LLM graf yang mahal."
   },
   {
-    "id": "PAPER-07",
+    "id": "PAPER-08",
+    "authors": "Zhang, B., Nakatani, T., & Walter, S.",
+    "year": 2024,
+    "title": "Enhancing E-commerce Product Title Translation with Retrieval-Augmented Generation and Large Language Models",
+    "venue": "arXiv preprint arXiv:2409.12880 (2024)",
+    "publisher": "arXiv",
+    "doi_or_url": "https://arxiv.org/abs/2409.12880",
+    "domain": "Industri (E-Commerce Catalog & Product Title Processing)",
+    "problem_statement": "Judul produk katalog e-commerce dan penamaan variasi (seperti tipe casing HP dan aksesoris) sangat ringkas, padat istilah merek, dan minim konteks kalimat, sehingga terjemahan mesin atau model bahasa umum sering salah mengidentifikasi entitas tipe produk.",
+    "methodology": {
+      "retrieval_type": "Few-Shot RAG Injection from Domain Product Repositories",
+      "embedding_model": "Multilingual Sentence Embeddings",
+      "generator_llm": "Instruction-tuned Large Language Models",
+      "vector_storage": "E-Commerce Bilingual / Catalog Semantic Index",
+      "architecture": "Input Product Title -> Vector Catalog Matcher -> Retrieve Similar Canonical Pairs -> Dynamic Prompt Augmentation -> Normalized Product Generation"
+    },
+    "dataset_and_metrics": {
+      "dataset": "Large-Scale Multilingual E-Commerce Product Title Dataset (Cross-border Catalogs)",
+      "metrics": "chrF score, BLEU score, Entity Preservation Accuracy"
+    },
+    "key_results": "Pendekatan RAG dinamis meningkatkan kualitas terjemahan dan normalisasi judul produk e-commerce hingga 15.3% pada metrik chrF, mempertahankan integritas nama merek dan tipe variasi produk dengan sangat akurat.",
+    "limitations_and_gap": "Fokus pada normalisasi teks judul; belum digabungkan dengan pengecekan database ketersediaan stok fisik gudang secara simultan.",
+    "future_directions": "Penggabungan modul normalisasi variasi judul marketplace dengan sistem inventori real-time terintegrasi."
+  },
+  {
+    "id": "PAPER-09",
     "authors": "Heredia-Álvaro, J. A., & González-Barreda, J.",
     "year": 2024,
     "title": "An advanced retrieval-augmented generation system for manufacturing quality control",
     "venue": "Advanced Engineering Informatics (Elsevier), Volume 64, Article 103007",
     "publisher": "Elsevier",
     "doi_or_url": "https://doi.org/10.1016/j.aei.2024.103007",
-    "domain": "Industri (Manufacturing & Industrial Quality Control)",
+    "domain": "Industri (Manufaktur & Quality Control)",
     "problem_statement": "Pada lantai produksi manufaktur, diagnosis cacat produk memerlukan penalaran cepat atas manual teknik dan standar rekayasa yang sangat spesifik, di mana LLM umum sering mengalami halusinasi istilah teknis dan prosedur koreksi.",
     "methodology": {
       "retrieval_type": "Advanced Hybrid RAG with Industrial Domain Pre/Post-Processing",
@@ -175,7 +225,7 @@
     "future_directions": "Penyatuan sistem diagnosis teknis RAG dengan sistem informasi pergudangan material dan suku cadang secara real-time."
   },
   {
-    "id": "PAPER-08",
+    "id": "PAPER-10",
     "authors": "Yan, S.-Q., Gu, J.-C., Zhu, Y., & Ling, Z.-H.",
     "year": 2024,
     "title": "Corrective Retrieval Augmented Generation (CRAG)",
@@ -198,55 +248,5 @@
     "key_results": "Meningkatkan akurasi pembangkitan teks secara drastis di 4 benchmark publik; mampu mendeteksi konteks yang salah dan secara dinamis mencari sumber alternatif secara otomatis.",
     "limitations_and_gap": "Evaluator dokumen menambah latensi inferensi tambahan; belum dioptimalkan untuk data numerik transaksional inventori yang membutuhkan kepastian nilai 100%.",
     "future_directions": "Penerapan evaluasi kepercayaan berbasis aturan deterministik (SQL constraint checking) untuk domain e-commerce dan pergudangan."
-  },
-  {
-    "id": "PAPER-09",
-    "authors": "Islam, P., Kannappan, A., Kiela, D., Qian, R., Scherrer, N., & Vidgen, B.",
-    "year": 2023,
-    "title": "FinanceBench: A New Benchmark for Financial Question Answering",
-    "venue": "arXiv preprint arXiv:2311.11944 (Patronus AI & Contextual AI, 2023)",
-    "publisher": "arXiv",
-    "doi_or_url": "https://arxiv.org/abs/2311.11944",
-    "domain": "Keuangan (Financial Reporting & Regulatory Disclosure QA)",
-    "problem_statement": "Laporan keuangan tahunan (SEC 10-K, 10-Q) memiliki tabel numerik padat dan catatan kaki hukum yang kompleks. Model RAG komersial standar gagal atau menolak menjawab hingga 81% pertanyaan finansial karena keterbatasan chunking pada tabel numerik.",
-    "methodology": {
-      "retrieval_type": "Benchmark Suite for Dense Vector vs Hybrid Table-Aware Retrieval",
-      "embedding_model": "Text-Embedding-Ada-002, BGE-Large, Cohere Embed",
-      "generator_llm": "GPT-4, Claude-2, LLaMA-2-70B",
-      "vector_storage": "Chroma, Pinecone Vector Stores",
-      "architecture": "Financial Document Chunking -> Dense Vector Indexing -> Top-k Context Extraction -> Grounded Financial Reasoning"
-    },
-    "dataset_and_metrics": {
-      "dataset": "FinanceBench (10.231 pertanyaan terverifikasi analis keuangan dari laporan SEC publik)",
-      "metrics": "Accuracy, Answer Correctness, Evidence Retrieval Recall, Hallucination Rate"
-    },
-    "key_results": "Menemukan bahwa RAG standar berbasis vektor murni hanya mencapai akurasi <20% pada kalkulasi rasio keuangan kompleks, membuktikan perlunya hybrid table-aware retrieval dan verifikasi numerik eksplisit.",
-    "limitations_and_gap": "Studi berfokus pada evaluasi benchmark dokumen statis; tidak menguji performa pada data transaksi keuangan frekuensi tinggi (real-time stream prices).",
-    "future_directions": "Integrasi database relasional kuantitatif dengan retrieval teks untuk menghilangkan kesalahan kalkulasi finansial."
-  },
-  {
-    "id": "PAPER-10",
-    "authors": "Zakka, C., Shad, R., Chaurasia, A., Dalal, A. R., Kim, J. L., Moor, M., Alexander, K., & Hiesinger, W.",
-    "year": 2024,
-    "title": "Almanac: Retrieval-Augmented Language Models for Clinical Medicine",
-    "venue": "NEJM AI (New England Journal of Medicine AI, 2024) / arXiv:2303.01229",
-    "publisher": "Massachusetts Medical Society (NEJM) / arXiv",
-    "doi_or_url": "https://arxiv.org/abs/2303.01229",
-    "domain": "Kesehatan (Clinical Guidelines & Medical Decision Support)",
-    "problem_statement": "Pedoman klinis dan interaksi obat berubah secara berkala. Kesalahan faktual atau halusinasi dosis oleh LLM dapat membahayakan keselamatan pasien pada konsultasi medis klinis.",
-    "methodology": {
-      "retrieval_type": "Verified Clinical Source Retrieval with Strict Medical Guideline Filtering",
-      "embedding_model": "PubMedBERT & Med-CPT Dense Embeddings",
-      "generator_llm": "PaLM-2 / GPT-4 with Clinical Safety Guardrails",
-      "vector_storage": "Curated Clinical Vector Store with Medical Ontology Metadata Filtering",
-      "architecture": "Clinical Query Analyzer -> Guideline Retriever -> Fact Verifier Layer -> Guardrail-Protected Generator"
-    },
-    "dataset_and_metrics": {
-      "dataset": "Almanac Clinical Benchmark (314 pertanyaan klinis kompleks lintas 9 spesialisasi medis dievaluasi oleh dewan dokter)",
-      "metrics": "Clinical Factuality Score, Completeness, User Preference, Adversarial Safety Rate"
-    },
-    "key_results": "Almanac secara signifikan mengungguli model LLM tanpa retrieval (ChatGPT-4, Bard) dalam hal faktualitas medis, kelengkapan rujukan pedoman klinis, dan keamanan adversarial tanpa halusinasi dosis kritis.",
-    "limitations_and_gap": "Ketergantungan tinggi pada basis data medis tertutup terkurasi; regulasi privasi HIPAA membatasi pengiriman data rekam medis ke API cloud publik; belum mendukung respon multimodal instan di perangkat bergerak tenaga medis.",
-    "future_directions": "Penerapan model lokal on-device quantized untuk rumah sakit daerah dengan infrastruktur terbatas dan tanpa konektivitas internet stabil."
   }
 ]
