@@ -25,7 +25,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_PAPERS_PATH = os.path.join(BASE_DIR, "data", "papers", "papers_corpus.json")
 OUTPUT_MD_PATH = os.path.join(BASE_DIR, "LITERATURE_GAP_MATRIX.md")
 OUTPUT_CSV_PATH = os.path.join(BASE_DIR, "data", "literature_gap_matrix.csv")
-OUTPUT_KULINO_PATH = os.path.join(BASE_DIR, "KULINO_LITERATURE_GAP_MATRIX.md")
 OUTPUT_HTML_PATH = os.path.join(BASE_DIR, "KULINO_SUBMISSION.html")
 
 
@@ -250,82 +249,6 @@ python3 scripts/pipeline_gap_matrix.py --summary
 """
 
 
-def generate_kulino_submission_markdown(papers: List[Dict[str, Any]]) -> str:
-    """Template dokumen formal khusus diunggah ke portal Kulino UDINUS tanpa emoji."""
-    matrix_table = generate_gap_matrix_table(papers)
-    return f"""# LAPORAN TUGAS TAMBAHAN: AWAL RTM 2
-## FAKULTAS TEKNIK - UNIVERSITAS DIAN NUSWANTORO (UDINUS)
-
----
-
-### DATA MAHASISWA & PENGAJUAN TUGAS
-- **Mata Kuliah**: Rekayasa Sistem Berbasis AI / Natural Language Processing
-- **Topik Tugas**: Pembuatan Literature GAP Matrix & Pipeline RAG Otomatis
-- **Domain Terpilih**: **Industri (E-Commerce, Ritel & Inventory Management)** *(Sesuai Tugas Pertama)*
-- **URL Source Code Pipeline RAG di GitHub**:  
-  [https://github.com/p36202600044-create/RAG-TELE-BOT](https://github.com/p36202600044-create/RAG-TELE-BOT)
-- **Jadwal Presentasi**: Minggu ke-7
-
----
-
-### I. LATAR BELAKANG DOMAIN & TUJUAN
-Pada tugas pertama, telah dikembangkan sistem Retrieval-Augmented Generation (RAG) untuk toko ritel smartphone casing **Flazzstore** yang terintegrasi dengan bot Telegram, database katalog Shopee (1.114 item), dan data stok fisik casing iPhone (35 model). 
-
-Untuk memenuhi **Tugas Tambahan Awal RTM 2**, dilakukan studi literatur ilmiah komprehensif terhadap **10 artikel ilmiah bereputasi internasional** (IEEE, ACM, Elsevier, NeurIPS, dan arXiv) pada domain **Industri, UMKM, dan E-Commerce** untuk memetakan keterbatasan metode penelitian saat ini (**Research GAPs**) serta membuktikan kebaruan (*novelty*) dari arsitektur pipeline RAG yang dikembangkan.
-
----
-
-### II. ARSITEKTUR PIPELINE RAG UNTUK GENERATE GAP MATRIX
-Pipeline RAG yang dibangun pada repositori (`scripts/pipeline_gap_matrix.py`) bekerja dengan alur sebagai berikut:
-1. **Document Ingestion & Normalization**: Mengurai korpus artikel ilmiah dari berkas terstruktur `data/papers/papers_corpus.json`.
-2. **Hybrid Retrieval (Dense-Sparse BM25 & Semantic Matcher)**: Mengindeks abstrak, metodologi, metrik evaluasi, dan kelemahan yang dicatat oleh para peneliti sebelumnya.
-3. **Synthesis & Reasoning Engine**: Mengekstraksi research gap secara komparatif dan menyusun matriks kesenjangan penelitian secara otomatis.
-4. **Multi-Format Exporter**: Menghasilkan berkas Markdown (`LITERATURE_GAP_MATRIX.md`), berkas spreadsheet CSV (`data/literature_gap_matrix.csv`), dan halaman laporan siap cetak (`KULINO_SUBMISSION.html`).
-
----
-
-### III. TABEL LITERATURE GAP MATRIX
-
-{matrix_table}
-
----
-
-### IV. SINTESIS KESENJANGAN RISET (RESEARCH GAP) & NOVELTY PROYEK
-
-Dari matriks literatur di atas, ditemukan 3 kesenjangan utama dalam penerapan RAG di domain industri ritel e-commerce:
-
-1. **Kesenjangan Sinkronisasi Vektor Real-Time (Real-time Sync Gap)**:
-   - *Masalah*: Model RAG konvensional (Lewis et al. 2020) mengasumsikan data vektor statis. Pada e-commerce, stok casing berubah setiap detik akibat transaksi kasir atau marketplace.
-   - *Solusi Proyek*: Kami menerapkan arsitektur **Hybrid Transactional/Vector** di Cloudflare Workers: database ACID (D1) mencatat mutasi stok secara instan, dan memicu sinkronisasi inkremental ke Cloudflare Vectorize (`@cf/baai/bge-m3`).
-
-2. **Kesenjangan Antarmuka Operasional & Audit Trail (Operational Traceability Gap)**:
-   - *Masalah*: Penelitian sebelumnya (Xu et al. 2024, de Freitas & Lotufo 2024) hanya berfokus pada evaluasi akurasi jawaban LLM, namun mengabaikan kebutuhan pencatatan mutasi (siapa admin yang mengubah stok, kapan, dan berapa delta perubahannya).
-   - *Solusi Proyek*: Disediakan dashboard `/monitor` terotentikasi dengan tabel riwayat `stock_mutations`, sehingga setiap jawaban bot Telegram dapat dipertanggungjawabkan ke data fisik gudang.
-
-3. **Kesenjangan Efisiensi Infrastruktur (Serverless Edge vs. Dedicated GPU)**:
-   - *Masalah*: RAG berskala industri umumnya memerlukan server GPU dedicated mahal yang memberatkan UMKM.
-   - *Solusi Proyek*: Seluruh pipeline berjalan di jaringan edge global serverless (Cloudflare Workers AI + Vectorize), menghasilkan respons <1.5 detik dengan biaya infrastruktur operasional sangat minimal.
-
----
-
-### V. PANDUAN REPRODUKSI (RUNNING THE PIPELINE)
-Langkah-langkah pengujian pipeline RAG pada repositori GitHub:
-```bash
-# 1. Clone repository
-git clone https://github.com/p36202600044-create/RAG-TELE-BOT.git
-cd RAG-TELE-BOT
-
-# 2. Jalankan pipeline RAG untuk generate GAP Matrix
-python3 scripts/pipeline_gap_matrix.py --generate
-
-# 3. Jalankan query interaktif terhadap literatur
-python3 scripts/pipeline_gap_matrix.py --query "Apa limitasi utama RAG pada industri e-commerce?"
-```
-
----
-*Laporan ini disusun untuk memenuhi kelengkapan Tugas Tambahan Awal RTM 2 - Fakultas Teknik Universitas Dian Nuswantoro.*
-"""
-
 
 def generate_printable_html(papers: List[Dict[str, Any]]) -> str:
     """Hasilkan berkas HTML siap cetak/simpan PDF untuk unggahan Kulino tanpa emoji."""
@@ -548,13 +471,7 @@ def main():
     export_csv(papers, OUTPUT_CSV_PATH)
     print(f"Berhasil mengekspor CSV GAP Matrix: {OUTPUT_CSV_PATH}")
 
-    # 3. Output Dokumen Kulino UDINUS
-    kulino_md = generate_kulino_submission_markdown(papers)
-    with open(OUTPUT_KULINO_PATH, "w", encoding="utf-8") as f:
-        f.write(kulino_md)
-    print(f"Berhasil membuat Laporan Pengunggahan Kulino: {OUTPUT_KULINO_PATH}")
-
-    # 4. Output HTML Siap Cetak / PDF
+    # 3. Output HTML Siap Cetak / PDF
     printable_html = generate_printable_html(papers)
     with open(OUTPUT_HTML_PATH, "w", encoding="utf-8") as f:
         f.write(printable_html)

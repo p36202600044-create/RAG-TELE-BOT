@@ -10,8 +10,8 @@
 - **Monitoring Stok**: [rag-tele.vercel.app/monitor](https://rag-tele.vercel.app/monitor) — login admin (HTTP Basic Auth)
 - **Prompt Lab (Vercel)**: [rag-tele.vercel.app](https://rag-tele.vercel.app/) — uji lima prompt tugas dari browser
 - **Literature GAP Matrix (MD)**: [`LITERATURE_GAP_MATRIX.md`](./LITERATURE_GAP_MATRIX.md)
-- **Laporan Kulino (MD)**: [`KULINO_LITERATURE_GAP_MATRIX.md`](./KULINO_LITERATURE_GAP_MATRIX.md)
 - **GAP Matrix (Spreadsheet CSV)**: [`data/literature_gap_matrix.csv`](./data/literature_gap_matrix.csv)
+- **Dokumen Cetak / PDF (HTML)**: [`KULINO_SUBMISSION.html`](./KULINO_SUBMISSION.html)
 - **Dokumen Lima Prompt**: [`PROMPTS.md`](./PROMPTS.md)
 
 ---
@@ -21,7 +21,7 @@
 Untuk memenuhi instruksi tugas perkuliahan **Fakultas Teknik Universitas Dian Nuswantoro**:
 1. **Literature GAP Matrix**: Mengkaji 10 artikel ilmiah bereputasi internasional (IEEE, ACM, Elsevier, NeurIPS, arXiv) pada domain **Industri & UMKM (E-Commerce, Ritel, Inventori & Layanan Pelanggan)**.
 2. **Pipeline RAG Generator**: Script `scripts/pipeline_gap_matrix.py` yang mampu mengindeks korpus paper, melakukan hybrid retrieval, menyintesis matriks kesenjangan riset (*Research GAP*), dan menjawab query riset ilmiah.
-3. **Hasil Siap Unggah Kulino**: Berkas laporan lengkap di [`KULINO_LITERATURE_GAP_MATRIX.md`](./KULINO_LITERATURE_GAP_MATRIX.md) dan [`KULINO_SUBMISSION.html`](./KULINO_SUBMISSION.html).
+3. **Hasil Siap Unggah Kulino**: Berkas lengkap di [`LITERATURE_GAP_MATRIX.md`](./LITERATURE_GAP_MATRIX.md) dan cetak PDF via [`KULINO_SUBMISSION.html`](./KULINO_SUBMISSION.html).
 
 ### Cara Menjalankan Pipeline RAG GAP Matrix
 ```bash
