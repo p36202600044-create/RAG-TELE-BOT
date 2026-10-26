@@ -11,6 +11,7 @@
 - **Prompt Lab (Vercel)**: [rag-tele.vercel.app](https://rag-tele.vercel.app/) — uji lima prompt tugas dari browser
 - **Literature GAP Matrix (MD)**: [`LITERATURE_GAP_MATRIX.md`](./LITERATURE_GAP_MATRIX.md)
 - **GAP Matrix (Spreadsheet CSV)**: [`data/literature_gap_matrix.csv`](./data/literature_gap_matrix.csv)
+- **Matriks Kriteria Komparatif (CSV)**: [`data/feature_comparison_matrix.csv`](./data/feature_comparison_matrix.csv)
 - **Dokumen Cetak / PDF (HTML)**: [`KULINO_SUBMISSION.html`](./KULINO_SUBMISSION.html)
 - **Dokumen Lima Prompt**: [`PROMPTS.md`](./PROMPTS.md)
 

@@ -16,7 +16,7 @@
       padding-bottom: 16px;
       margin-bottom: 24px;
     }
-    .header h1 { margin: 0 0 6px 0; font-size: 22px; color: #1e3a8a; }
+    .header h1 { margin: 0 0 6px 0; font-size: 20px; color: #1e3a8a; }
     .header p { margin: 3px 0; font-size: 13px; color: #475569; }
     .meta-box {
       background: #f8fafc;
@@ -30,12 +30,12 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 11.5px;
-      margin-bottom: 30px;
+      font-size: 11px;
+      margin-bottom: 24px;
     }
     th, td {
       border: 1px solid #cbd5e1;
-      padding: 10px 8px;
+      padding: 8px 6px;
       vertical-align: top;
       text-align: left;
     }
@@ -43,7 +43,7 @@
       background-color: #1e293b;
       color: #ffffff;
       font-weight: 600;
-      font-size: 11px;
+      font-size: 10.5px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -57,16 +57,19 @@
     }
     .badge-domain { background: #e0e7ff; color: #3730a3; }
     .badge-pub { background: #fef3c7; color: #92400e; }
+    .badge-green { background: #dcfce7; color: #166534; }
+    .badge-yellow { background: #fef9c3; color: #854d0e; }
+    .badge-red { background: #fee2e2; color: #991b1b; }
     .section-title {
-      font-size: 16px;
+      font-size: 15px;
       color: #0f172a;
       border-left: 4px solid #2563eb;
       padding-left: 10px;
-      margin: 28px 0 12px 0;
+      margin: 24px 0 12px 0;
     }
     @media print {
-      body { margin: 8mm; font-size: 10px; }
-      th, td { padding: 6px 4px; }
+      body { margin: 6mm; font-size: 9.5px; }
+      th, td { padding: 5px 3px; }
     }
   </style>
 </head>
@@ -80,10 +83,174 @@
   <div class="meta-box">
     <strong>URL Repository Source Code Pipeline RAG di GitHub:</strong><br>
     <a href="https://github.com/p36202600044-create/RAG-TELE-BOT" target="_blank">https://github.com/p36202600044-create/RAG-TELE-BOT</a><br><br>
-    <em>Catatan Pengunggahan Kulino: Dokumen ini memuat Literature GAP Matrix 10 artikel ilmiah bereputasi (IEEE, ACM, Elsevier, NeurIPS, arXiv) beserta bukti implementasi source code pipeline RAG.</em>
+    <em>Catatan Pengunggahan Kulino: Dokumen ini memuat Literature GAP Matrix komprehensif atas 10 artikel ilmiah bereputasi internasional (IEEE, ACM, Elsevier, NeurIPS, arXiv) beserta bukti implementasi source code pipeline RAG.</em>
   </div>
 
-  <h2 class="section-title">Tabel Literature GAP Matrix</h2>
+  <h2 class="section-title">Tabel 1: Matriks Evaluasi Kriteria Komparatif (Feature Comparison Grid)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 3%;">No</th>
+        <th style="width: 22%;">Model / Paper Penelitian</th>
+        <th style="width: 15%;">Venue & Tahun</th>
+        <th style="width: 8%; text-align:center;">K1: SQL ACID</th>
+        <th style="width: 8%; text-align:center;">K2: Audit Trail</th>
+        <th style="width: 9%; text-align:center;">K3: Telegram</th>
+        <th style="width: 8%; text-align:center;">K4: Serverless</th>
+        <th style="width: 9%; text-align:center;">K5: Normalisasi</th>
+        <th style="width: 9%; text-align:center;">K6: Hybrid</th>
+        <th style="width: 9%; text-align:center;">K7: Guardrail</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        <tr>
+          <td style="text-align:center;">1</td>
+          <td><strong>Lewis et al. (DPR + BART)</strong></td>
+          <td>NeurIPS 2020</td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-yellow">Parsial</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+        </tr>
+        
+        <tr>
+          <td style="text-align:center;">2</td>
+          <td><strong>Gao et al. (Modular RAG Survey)</strong></td>
+          <td>arXiv 2023</td>
+          <td style="text-align:center;"><span class="badge badge-yellow">Parsial</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-yellow">Parsial</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-green">Ya</span></td>
+          <td style="text-align:center;"><span class="badge badge-yellow">Parsial</span></td>
+        </tr>
+        
+        <tr>
+          <td style="text-align:center;">3</td>
+          <td><strong>Rokon et al. (Walmart InvAwr-RAG)</strong></td>
+          <td>Walmart / arXiv 2024</td>
+          <td style="text-align:center;"><span class="badge badge-green">Ya</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-yellow">Parsial</span></td>
+          <td style="text-align:center;"><span class="badge badge-green">Ya</span></td>
+          <td style="text-align:center;"><span class="badge badge-green">Ya</span></td>
+        </tr>
+        
+        <tr>
+          <td style="text-align:center;">4</td>
+          <td><strong>Xu et al. (Alibaba ItemRAG)</strong></td>
+          <td>IEEE Big Data 2024</td>
+          <td style="text-align:center;"><span class="badge badge-yellow">Parsial</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-green">Ya</span></td>
+          <td style="text-align:center;"><span class="badge badge-green">Ya</span></td>
+          <td style="text-align:center;"><span class="badge badge-yellow">Parsial</span></td>
+        </tr>
+        
+        <tr>
+          <td style="text-align:center;">5</td>
+          <td><strong>de Freitas & Lotufo (Retail-GPT)</strong></td>
+          <td>arXiv 2024</td>
+          <td style="text-align:center;"><span class="badge badge-yellow">Parsial</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-yellow">Parsial</span></td>
+          <td style="text-align:center;"><span class="badge badge-yellow">Parsial</span></td>
+        </tr>
+        
+        <tr>
+          <td style="text-align:center;">6</td>
+          <td><strong>Xu, Cruz et al. (LinkedIn Support)</strong></td>
+          <td>ACM SIGIR 2024</td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-green">Ya</span></td>
+          <td style="text-align:center;"><span class="badge badge-yellow">Parsial</span></td>
+        </tr>
+        
+        <tr>
+          <td style="text-align:center;">7</td>
+          <td><strong>Edge et al. (Microsoft GraphRAG)</strong></td>
+          <td>Microsoft / arXiv 2024</td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-green">Ya</span></td>
+          <td style="text-align:center;"><span class="badge badge-green">Ya</span></td>
+        </tr>
+        
+        <tr>
+          <td style="text-align:center;">8</td>
+          <td><strong>Zhang et al. (Product Title RAG)</strong></td>
+          <td>arXiv 2024</td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-green">Ya</span></td>
+          <td style="text-align:center;"><span class="badge badge-yellow">Parsial</span></td>
+          <td style="text-align:center;"><span class="badge badge-yellow">Parsial</span></td>
+        </tr>
+        
+        <tr>
+          <td style="text-align:center;">9</td>
+          <td><strong>Heredia-Alvaro et al. (Industrial QC)</strong></td>
+          <td>Elsevier AEI 2024</td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-green">Ya</span></td>
+          <td style="text-align:center;"><span class="badge badge-green">Ya</span></td>
+        </tr>
+        
+        <tr>
+          <td style="text-align:center;">10</td>
+          <td><strong>Yan et al. (CRAG - Corrective RAG)</strong></td>
+          <td>arXiv 2024</td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-red">Tidak</span></td>
+          <td style="text-align:center;"><span class="badge badge-green">Ya</span></td>
+          <td style="text-align:center;"><span class="badge badge-green">Ya</span></td>
+        </tr>
+        
+        <tr style="background-color: #eff6ff; font-weight: bold;">
+          <td style="text-align:center;">PROPOSED</td>
+          <td><strong>RAG-TELE-BOT (Proyek Ini)</strong></td>
+          <td>Proyek Sistem RTM 2 (2024-2026)</td>
+          <td style="text-align:center;"><span class="badge badge-green">Ya</span></td>
+          <td style="text-align:center;"><span class="badge badge-green">Ya</span></td>
+          <td style="text-align:center;"><span class="badge badge-green">Ya</span></td>
+          <td style="text-align:center;"><span class="badge badge-green">Ya</span></td>
+          <td style="text-align:center;"><span class="badge badge-green">Ya</span></td>
+          <td style="text-align:center;"><span class="badge badge-green">Ya</span></td>
+          <td style="text-align:center;"><span class="badge badge-green">Ya</span></td>
+        </tr>
+        
+    </tbody>
+  </table>
+
+  <h2 class="section-title">Tabel 2: Matriks Sintesis Literatur Komprehensif (10 Paper Ilmiah)</h2>
   <table>
     <thead>
       <tr>
@@ -314,12 +481,13 @@
     </tbody>
   </table>
 
-  <h2 class="section-title">Sintesis Gap & Hubungan dengan Proyek RAG-TELE-BOT (Novelty)</h2>
+  <h2 class="section-title">Taksonomi 4 Dimensi Kesenjangan Ilmiah & Solusi RAG-TELE-BOT</h2>
   <div class="meta-box">
     <ol>
-      <li><strong>Real-time Dynamic Stock Synchronization</strong>: Mengatasi kelemahan RAG statis dengan arsitektur hybrid Cloudflare D1 (SQL ACID) + Cloudflare Vectorize yang tersinkronisasi otomatis saat mutasi stok terjadi.</li>
-      <li><strong>Operational Audit Trail</strong>: Menyediakan tabel <code>stock_mutations</code> dan halaman monitoring <code>/monitor</code> berotentikasi untuk melacak siapa admin yang mengubah stok dan riwayat perubahannya.</li>
-      <li><strong>Serverless Edge Deployment</strong>: Mengurangi biaya sewa GPU cloud dedicated dengan arsitektur edge serverless Cloudflare Workers AI (<1.5 detik respons).</li>
+      <li><strong>Methodological Gap (Kesenjangan Metodologis)</strong>: RAG konvensional hanya mengasumsikan teks statis. Proyek ini memadukan <code>Cloudflare D1 (SQL ACID)</code> untuk ground-truth kuantitatif dengan <code>Cloudflare Vectorize</code> secara hybrid.</li>
+      <li><strong>Architectural & Cost Gap (Kesenjangan Arsitektur & Biaya)</strong>: Model enterprise membutuhkan kluster GPU dedicated mahal. Proyek ini dibangun di atas Cloudflare Workers AI serverless edge dengan biaya mendekati nol bagi UMKM.</li>
+      <li><strong>Human-AI Interaction Gap (Kesenjangan Interaksi)</strong>: Menjembatani model RAG ke pengguna langsung via Telegram Webhook berlatensi rendah (<1.5 detik per jawaban).</li>
+      <li><strong>Operational Governance Gap (Kesenjangan Tata Kelola)</strong>: Menyediakan tabel <code>stock_mutations</code> dan dashboard <code>/monitor</code> untuk audit trail perubahan unit barang oleh multi-admin.</li>
     </ol>
   </div>
 </body>

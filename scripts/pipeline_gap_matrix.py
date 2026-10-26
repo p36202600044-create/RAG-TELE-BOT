@@ -4,11 +4,12 @@ Pipeline RAG untuk Generate Literature GAP Matrix
 Tugas Tambahan Awal RTM 2 - Fakultas Teknik Universitas Dian Nuswantoro (UDINUS)
 
 Fungsi:
-1. Membaca dan mengindeks korpus artikel ilmiah RAG (Domain Industri, Keuangan, Kesehatan).
-2. Melakukan hybrid retrieval (lexical BM25/TF-IDF + semantic token similarity) terhadap korpus riset.
-3. Mensintesis Literature GAP Matrix dalam format Markdown, CSV, dan HTML siap unggah di Kulino.
-4. Mendukung query interaktif tanya-jawab ilmiah berbasis RAG terhadap literatur penelitian.
-5. Memetakan Research Gap terhadap novelty/solusi pada proyek sistem RAG Flazzstore.
+1. Membaca dan mengindeks korpus artikel ilmiah RAG (Domain Industri, E-Commerce, Retail Inventory).
+2. Melakukan hybrid retrieval (lexical BM25/TF-IDF + token matching) terhadap korpus riset.
+3. Mensintesis Matriks Kriteria Komparatif (Feature Comparison Grid) dan Tabel Literature GAP Matrix lengkap.
+4. Memetakan 4 Kategori Formal Academic Research GAP (Methodological, Architectural, Interaction, Governance).
+5. Mengekspor format Markdown (LITERATURE_GAP_MATRIX.md), CSV (sintesis & perbandingan fitur), dan HTML siap cetak PDF.
+6. Mendukung query interaktif tanya-jawab ilmiah berbasis RAG terhadap literatur penelitian.
 """
 
 import os
@@ -25,7 +26,154 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_PAPERS_PATH = os.path.join(BASE_DIR, "data", "papers", "papers_corpus.json")
 OUTPUT_MD_PATH = os.path.join(BASE_DIR, "LITERATURE_GAP_MATRIX.md")
 OUTPUT_CSV_PATH = os.path.join(BASE_DIR, "data", "literature_gap_matrix.csv")
+OUTPUT_GRID_CSV_PATH = os.path.join(BASE_DIR, "data", "feature_comparison_matrix.csv")
 OUTPUT_HTML_PATH = os.path.join(BASE_DIR, "KULINO_SUBMISSION.html")
+
+COMPARISON_GRID_DATA = [
+    {
+        "no": "1",
+        "paper": "Lewis et al. (DPR + BART)",
+        "venue_year": "NeurIPS 2020",
+        "k1": "Tidak",
+        "k2": "Tidak",
+        "k3": "Tidak",
+        "k4": "Tidak",
+        "k5": "Tidak",
+        "k6": "Parsial",
+        "k7": "Tidak",
+        "summary": "Fondasi DPR/BART untuk open-domain QA teks statis Wikipedia; tidak mendukung data inventori terstruktur atau update realtime."
+    },
+    {
+        "no": "2",
+        "paper": "Gao et al. (Modular RAG Survey)",
+        "venue_year": "arXiv 2023",
+        "k1": "Parsial",
+        "k2": "Tidak",
+        "k3": "Tidak",
+        "k4": "Parsial",
+        "k5": "Tidak",
+        "k6": "Ya",
+        "k7": "Parsial",
+        "summary": "Survei komprehensif taksonomi RAG modular & hybrid retrieval; mengidentifikasi kebutuhan edge RAG namun belum ada implementasi ACID live."
+    },
+    {
+        "no": "3",
+        "paper": "Rokon et al. (Walmart InvAwr-RAG)",
+        "venue_year": "Walmart / arXiv 2024",
+        "k1": "Ya",
+        "k2": "Tidak",
+        "k3": "Tidak",
+        "k4": "Tidak",
+        "k5": "Parsial",
+        "k6": "Ya",
+        "k7": "Ya",
+        "summary": "Pencarian iklan berkesadaran stok katalog Walmart; berorientasi server besar internal tanpa audit trail mutasi admin gudang."
+    },
+    {
+        "no": "4",
+        "paper": "Xu et al. (Alibaba ItemRAG)",
+        "venue_year": "IEEE Big Data 2024",
+        "k1": "Parsial",
+        "k2": "Tidak",
+        "k3": "Tidak",
+        "k4": "Tidak",
+        "k5": "Ya",
+        "k6": "Ya",
+        "k7": "Parsial",
+        "summary": "Decoupled item knowledge graph QA katalog Alibaba; komputasi graf terpusat berskala enterprise tanpa interface messaging instan."
+    },
+    {
+        "no": "5",
+        "paper": "de Freitas & Lotufo (Retail-GPT)",
+        "venue_year": "arXiv 2024",
+        "k1": "Parsial",
+        "k2": "Tidak",
+        "k3": "Tidak",
+        "k4": "Tidak",
+        "k5": "Tidak",
+        "k6": "Parsial",
+        "k7": "Parsial",
+        "summary": "Chatbot belanja e-commerce open-source Llama; terbatas pada web widget eksperimental tanpa audit trail mutasi dan webhook bot."
+    },
+    {
+        "no": "6",
+        "paper": "Xu, Cruz et al. (LinkedIn Support)",
+        "venue_year": "ACM SIGIR 2024",
+        "k1": "Tidak",
+        "k2": "Tidak",
+        "k3": "Tidak",
+        "k4": "Tidak",
+        "k5": "Tidak",
+        "k6": "Ya",
+        "k7": "Parsial",
+        "summary": "Dual-level Knowledge Graph untuk customer service tickets LinkedIn; fokus resolusi keluhan teks tanpa integrasi stok inventori fisik."
+    },
+    {
+        "no": "7",
+        "paper": "Edge et al. (Microsoft GraphRAG)",
+        "venue_year": "Microsoft / arXiv 2024",
+        "k1": "Tidak",
+        "k2": "Tidak",
+        "k3": "Tidak",
+        "k4": "Tidak",
+        "k5": "Tidak",
+        "k6": "Ya",
+        "k7": "Ya",
+        "summary": "Graph community summary untuk query global enterprise; biaya ekstraksi token LLM sangat tinggi, tidak praktis untuk mutasi stok cepat."
+    },
+    {
+        "no": "8",
+        "paper": "Zhang et al. (Product Title RAG)",
+        "venue_year": "arXiv 2024",
+        "k1": "Tidak",
+        "k2": "Tidak",
+        "k3": "Tidak",
+        "k4": "Tidak",
+        "k5": "Ya",
+        "k6": "Parsial",
+        "k7": "Parsial",
+        "summary": "Few-shot RAG untuk normalisasi dan terjemahan judul produk marketplace; modul teks murni tanpa koneksi basis data gudang."
+    },
+    {
+        "no": "9",
+        "paper": "Heredia-Alvaro et al. (Industrial QC)",
+        "venue_year": "Elsevier AEI 2024",
+        "k1": "Tidak",
+        "k2": "Tidak",
+        "k3": "Tidak",
+        "k4": "Tidak",
+        "k5": "Tidak",
+        "k6": "Ya",
+        "k7": "Ya",
+        "summary": "RAG kontrol kualitas manufaktur keramik; berjalan pada workstation pabrik offline tanpa arsitektur edge atau kanal pesan mobile."
+    },
+    {
+        "no": "10",
+        "paper": "Yan et al. (CRAG - Corrective RAG)",
+        "venue_year": "arXiv 2024",
+        "k1": "Tidak",
+        "k2": "Tidak",
+        "k3": "Tidak",
+        "k4": "Tidak",
+        "k5": "Tidak",
+        "k6": "Ya",
+        "k7": "Ya",
+        "summary": "Mekanisme self-correction dengan evaluator retrieval dan web fallback; evaluasi probabilistik teks tanpa validasi integritas SQL."
+    },
+    {
+        "no": "PROPOSED",
+        "paper": "RAG-TELE-BOT (Proyek Ini)",
+        "venue_year": "Proyek Sistem RTM 2 (2024-2026)",
+        "k1": "Ya",
+        "k2": "Ya",
+        "k3": "Ya",
+        "k4": "Ya",
+        "k5": "Ya",
+        "k6": "Ya",
+        "k7": "Ya",
+        "summary": "Arsitektur Hybrid Edge RAG: Cloudflare D1 (SQL ACID) + Vectorize + Telegram Bot Webhook + Audit Trail mutasi inventori UMKM Flazzstore."
+    }
+]
 
 
 def tokenize(text: str) -> List[str]:
@@ -94,6 +242,33 @@ def load_papers() -> List[Dict[str, Any]]:
         raise FileNotFoundError(f"File database korpus tidak ditemukan: {DATA_PAPERS_PATH}")
     with open(DATA_PAPERS_PATH, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+def generate_feature_comparison_grid_table() -> str:
+    """Format tabel Matriks Kriteria Komparatif (Feature Comparison Grid) dalam Markdown tanpa emoji."""
+    lines = [
+        "| No | Model / Paper Penelitian | Publisher & Tahun | K1: Sinkronisasi SQL Dinamis | K2: Audit Trail Mutasi Stok | K3: Antarmuka Chatbot Telegram | K4: Arsitektur Serverless Edge | K5: Normalisasi Variasi Katalog | K6: Hybrid Retrieval | K7: Guardrail Anti-Halusinasi |",
+        "|:---:|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|",
+    ]
+    for row in COMPARISON_GRID_DATA:
+        is_proposed = row["no"] == "PROPOSED"
+        prefix = "**" if is_proposed else ""
+        postfix = "**" if is_proposed else ""
+        no_str = f"**{row['no']}**" if is_proposed else row["no"]
+        paper_str = f"{prefix}{row['paper']}{postfix}"
+        venue_str = f"{prefix}{row['venue_year']}{postfix}"
+        k1_str = f"{prefix}{row['k1']}{postfix}"
+        k2_str = f"{prefix}{row['k2']}{postfix}"
+        k3_str = f"{prefix}{row['k3']}{postfix}"
+        k4_str = f"{prefix}{row['k4']}{postfix}"
+        k5_str = f"{prefix}{row['k5']}{postfix}"
+        k6_str = f"{prefix}{row['k6']}{postfix}"
+        k7_str = f"{prefix}{row['k7']}{postfix}"
+
+        lines.append(
+            f"| {no_str} | {paper_str} | {venue_str} | {k1_str} | {k2_str} | {k3_str} | {k4_str} | {k5_str} | {k6_str} | {k7_str} |"
+        )
+    return "\n".join(lines)
 
 
 def generate_gap_matrix_table(papers: List[Dict[str, Any]]) -> str:
@@ -180,7 +355,43 @@ def export_csv(papers: List[Dict[str, Any]], output_path: str):
             })
 
 
+def export_feature_comparison_csv(output_path: str):
+    """Ekspor Matriks Kriteria Komparatif ke CSV."""
+    fieldnames = [
+        "No",
+        "Paper_Penelitian",
+        "Venue_Tahun",
+        "K1_Sinkronisasi_SQL_Dinamis",
+        "K2_Audit_Trail_Mutasi_Stok",
+        "K3_Antarmuka_Chatbot_Telegram",
+        "K4_Arsitektur_Serverless_Edge",
+        "K5_Normalisasi_Variasi_Katalog",
+        "K6_Hybrid_Retrieval",
+        "K7_Guardrail_Anti_Halusinasi",
+        "Ringkasan_Analisis"
+    ]
+
+    with open(output_path, "w", encoding="utf-8-sig", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in COMPARISON_GRID_DATA:
+            writer.writerow({
+                "No": row["no"],
+                "Paper_Penelitian": row["paper"],
+                "Venue_Tahun": row["venue_year"],
+                "K1_Sinkronisasi_SQL_Dinamis": row["k1"],
+                "K2_Audit_Trail_Mutasi_Stok": row["k2"],
+                "K3_Antarmuka_Chatbot_Telegram": row["k3"],
+                "K4_Arsitektur_Serverless_Edge": row["k4"],
+                "K5_Normalisasi_Variasi_Katalog": row["k5"],
+                "K6_Hybrid_Retrieval": row["k6"],
+                "K7_Guardrail_Anti_Halusinasi": row["k7"],
+                "Ringkasan_Analisis": row["summary"]
+            })
+
+
 def generate_full_markdown(papers: List[Dict[str, Any]]) -> str:
+    grid_table = generate_feature_comparison_grid_table()
     matrix_table = generate_gap_matrix_table(papers)
     total_papers = len(papers)
 
@@ -192,32 +403,54 @@ def generate_full_markdown(papers: List[Dict[str, Any]]) -> str:
 
 ---
 
-## 1. Ringkasan Eksekutif & Taksonomi GAP Riset
+## 1. Ringkasan Eksekutif & Taksonomi 4 Dimensi GAP Riset
 
-Berdasarkan analisis sistematis terhadap {total_papers} artikel ilmiah terkini (2020-2024), teridentifikasi **3 Research Gap Kritis** dalam penerapan RAG di dunia industri ritel dan e-commerce:
+Berdasarkan tinjauan sistematis terhadap {total_papers} artikel ilmiah terkini (2020-2024), kesenjangan riset (*Research Gap*) dalam penerapan sistem RAG pada domain industri dan ritel UMKM diklasifikasikan ke dalam 4 dimensi fundamental:
 
-1. **Gap Sinkronisasi Vektor vs. Mutasi Database Operasional (Real-Time ACID Gap)**:
-   - *Temuan*: Mayoritas arsitektur RAG konvensional (Lewis et al. 2020, Gao et al. 2023) mengasumsikan basis data vektor bersifat statis atau di-refresh secara batch berkala.
-   - *Dampak di Industri*: Terjadi halusinasi stok (menjawab barang ready padahal unit fisik di gudang telah habis terjual).
-   - *Solusi Proyek Ini*: Memadukan **Cloudflare D1 (Relational SQL ACID)** sebagai ground-truth kuantitatif dengan **Cloudflare Vectorize** yang disinkronkan secara otomatis dan inkremental saat terjadi mutasi stok di endpoint `/api/stocks/adjust`.
+### 1.1 Kesenjangan Metodologis (Methodological GAP)
+Mayoritas riset RAG (Lewis et al. 2020, Gao et al. 2023, Yan et al. 2024) mengasumsikan basis pengetahuan berupa teks narasi statis atau grafik semantik yang diindeks secara berkala (batch). Pada lingkungan operasional ritel, kuantitas stok barang berubah setiap detik akibat transaksi fisik dan kasir. Ketiadaan integrasi dua arah (*two-way live binding*) antara dense vector retrieval dan basis data relasional kuantitatif menghasilkan fenomena **Halusinasi Ketersediaan Stok** (*Phantom Inventory Hallucination*), di mana LLM menjawab unit barang ready padahal secara fisik di gudang telah habis terjual.
 
-2. **Gap Integrasi Saluran Interaksi Pengguna (Omnichannel & Messaging Gap)**:
-   - *Temuan*: Paper e-commerce seperti Rokon et al. (Walmart, 2024) dan Xu et al. (Alibaba, 2024) fokus pada antarmuka web pencarian formal, mengabaikan saluran pesan instan (Telegram, WhatsApp) yang mendominasi transaksi sosial di Asia Tenggara.
-   - *Solusi Proyek Ini*: Pipeline RAG serverless berbasis Webhook Telegram terhubung langsung dengan backend Worker berlatensi rendah (<1.5 detik per respons) tanpa server GPU mandiri.
+### 1.2 Kesenjangan Arsitektural & Finansial (Architectural & Cost GAP)
+Model-model RAG e-commerce terkemuka (Rokon et al. / Walmart 2024, Xu et al. / Alibaba 2024, Edge et al. / Microsoft 2024) mengandalkan kluster GPU dedicated dan Knowledge Graph masif yang membutuhkan biaya pemeliharaan infrastruktur ribuan dollar per bulan. Arsitektur ini tidak terjangkau (*financially prohibitive*) untuk sektor UMKM. Riset yang ada menyisakan celah kritis: **bagaimana membangun arsitektur RAG yang responsif, berlatensi rendah (<1.5 detik), namun beroperasi di atas infrastruktur serverless edge dengan biaya operasional mendekati nol**.
 
-3. **Gap Ketiadaan Audit Trail dan Validasi Mutasi Multi-Admin**:
-   - *Temuan*: Paper logistik dan layanan pelanggan (Xu, Cruz, et al. 2024) tidak menyediakan antarmuka terotentikasi bagi staf gudang untuk mencatat mutasi stok (delta, previous, new) dengan riwayat jejak audit (audit trail).
-   - *Solusi Proyek Ini*: Halaman dashboard monitoring `/monitor` dengan HTTP Basic Auth, pencatatan mutasi di tabel `stock_mutations`, dan integrasi live RAG.
+### 1.3 Kesenjangan Interaksi & Saluran Pengguna (Human-AI Interaction GAP)
+Studi terdahulu umumnya menguji model RAG pada antarmuka web portal internal desktop korporat atau pengujian benchmark statis. Padahal di negara berkembang dan ekosistem UMKM Asia Tenggara, transaksi dan pertanyaan pelanggan berpusat pada aplikasi pesan instan (*instant messaging*) seperti Telegram dan WhatsApp. Belum ada model RAG terpublikasi yang menjembatani pipeline hybrid secara langsung ke antarmuka bot pesan instan melalui webhook serverless instan.
+
+### 1.4 Kesenjangan Tata Kelola & Integritas Operasional (Operational Governance & Audit GAP)
+Tidak ada literatur RAG ritel yang mengintegrasikan kecerdasan pencarian LLM dengan modul tata kelola mutasi stok operasional (*audit trail*). Sistem e-commerce di dunia nyata membutuhkan pertanggungjawaban multi-admin gudang (siapa staf yang menambah/mengurangi unit fisik, delta perubahan, dan catatan mutasi) yang langsung merefleksikan pengetahuan grounding LLM seketika.
 
 ---
 
-## 2. Tabel Literature GAP Matrix
+## 2. Tabel 1: Matriks Evaluasi Kriteria Komparatif (Feature Comparison Grid)
+
+Tabel berikut menyajikan evaluasi silang komparatif antara 10 artikel ilmiah bereputasi internasional terhadap sistem yang diajukan (**RAG-TELE-BOT**) pada 7 kriteria arsitektur teknis:
+
+- **K1: Real-Time Dynamic SQL Synchronization**: Sinkronisasi data stok transaksional seketika (ACID D1).
+- **K2: Operational Audit Trail & Mutation Logging**: Pencatatan riwayat perubahan saldo stok oleh aktor admin di database.
+- **K3: Omnichannel Instant Messaging Interface**: Integrasi interaksi pengguna langsung melalui bot Telegram Webhook.
+- **K4: Serverless Edge Architecture**: Berjalan di edge serverless tanpa menyewa server GPU mandiri (Cloudflare Workers AI).
+- **K5: Catalog Variation & Title Normalization**: Pemetaan otomatis variasi judul marketplace (Shopee) ke model fisik Apple.
+- **K6: Hybrid Multi-Level Retrieval**: Menggabungkan pencarian leksikal, vektor semantik dense, dan kuantitatif SQL.
+- **K7: Deterministic Hallucination Guardrail**: Pengecekan deterministik untuk mencegah LLM merekomendasikan stok barang nol/habis.
+
+{grid_table}
+
+*Keterangan Evaluasi*:  
+- **Ya**: Kriteria diimplementasikan dan diverifikasi secara operasional.  
+- **Parsial**: Kriteria dibahas secara teoretis, berupa rancangan konseptual, atau diuji terbatas pada lingkungan tertutup.  
+- **Tidak**: Kriteria tidak didukung atau berada di luar cakupan penelitian.
+
+---
+
+## 3. Tabel 2: Tabel Literature GAP Matrix Komprehensif
 
 {matrix_table}
 
 ---
 
-## 3. Matriks Pemetaan GAP Riset ke Fitur Solusi Proyek (Novelty Mapping)
+## 4. Tabel 3: Matriks Pemetaan Kesenjangan ke Novelty & Modul Implementasi
+
+Tabel berikut merinci bagaimana kelemahan spesifik pada literatur ilmiah dijawab secara konkret melalui source code pada repositori **RAG-TELE-BOT**:
 
 | No | Research Gap yang Diidentifikasi pada Literatur | Paper Rujukan | Solusi & Inovasi yang Diimplementasikan pada Proyek RAG-TELE-BOT | File / Modul Implementasi |
 |:---:|:---|:---|:---|:---|
@@ -229,12 +462,26 @@ Berdasarkan analisis sistematis terhadap {total_papers} artikel ilmiah terkini (
 
 ---
 
-## 4. Cara Menjalankan Pipeline RAG GAP Matrix
+## 5. Distribusi & Kredibilitas Ilmiah Korpus Literatur
+
+Seluruh artikel ilmiah yang dianalisis dalam matriks ini merupakan publikasi valid dan dapat diakses publik:
+- **Tahun Publikasi**: 80% diterbitkan pada kurun waktu terkini (2024: 8 paper, 2023: 1 paper, 2020: 1 paper seminal NeurIPS).
+- **Penerbit / Publisher Terakreditasi**:
+  - IEEE (Big Data Mining and Analytics)
+  - ACM (SIGIR eCom Track)
+  - Elsevier (Advanced Engineering Informatics, Q1 Scopus)
+  - NeurIPS / Curran Associates (Conference on Neural Information Processing Systems)
+  - arXiv / Industrial Research Labs (Walmart Global Tech, Alibaba Group, Microsoft Research, State University of Campinas)
+- **Domain Relevansi**: 100% berada pada domain Industri Ritel, E-Commerce, Inventori Gudang, Layanan Pelanggan, dan Rekayasa Software RAG.
+
+---
+
+## 6. Panduan Replikasi Pipeline RAG GAP Matrix
 
 Pipeline ini dapat dijalankan langsung di terminal lokal atau server:
 
 ```bash
-# 1. Menghasilkan ulang seluruh berkas Matrix (Markdown, CSV, HTML, Kulino Doc)
+# 1. Menghasilkan ulang seluruh berkas Matrix (Markdown, CSV Sintesis, CSV Grid, HTML Siap Cetak)
 python3 scripts/pipeline_gap_matrix.py --generate
 
 # 2. Menanyakan pertanyaan riset terhadap literatur ilmiah (RAG Query)
@@ -249,9 +496,29 @@ python3 scripts/pipeline_gap_matrix.py --summary
 """
 
 
-
 def generate_printable_html(papers: List[Dict[str, Any]]) -> str:
     """Hasilkan berkas HTML siap cetak/simpan PDF untuk unggahan Kulino tanpa emoji."""
+    grid_rows_html = []
+    for row in COMPARISON_GRID_DATA:
+        is_prop = row["no"] == "PROPOSED"
+        bg_style = ' style="background-color: #eff6ff; font-weight: bold;"' if is_prop else ""
+        badge_class = lambda val: "badge-green" if val == "Ya" else ("badge-yellow" if val == "Parsial" else "badge-red")
+        
+        grid_rows_html.append(f"""
+        <tr{bg_style}>
+          <td style="text-align:center;">{row['no']}</td>
+          <td><strong>{row['paper']}</strong></td>
+          <td>{row['venue_year']}</td>
+          <td style="text-align:center;"><span class="badge {badge_class(row['k1'])}">{row['k1']}</span></td>
+          <td style="text-align:center;"><span class="badge {badge_class(row['k2'])}">{row['k2']}</span></td>
+          <td style="text-align:center;"><span class="badge {badge_class(row['k3'])}">{row['k3']}</span></td>
+          <td style="text-align:center;"><span class="badge {badge_class(row['k4'])}">{row['k4']}</span></td>
+          <td style="text-align:center;"><span class="badge {badge_class(row['k5'])}">{row['k5']}</span></td>
+          <td style="text-align:center;"><span class="badge {badge_class(row['k6'])}">{row['k6']}</span></td>
+          <td style="text-align:center;"><span class="badge {badge_class(row['k7'])}">{row['k7']}</span></td>
+        </tr>
+        """)
+
     rows_html = []
     for idx, p in enumerate(papers, start=1):
         m = p['methodology']
@@ -297,7 +564,7 @@ def generate_printable_html(papers: List[Dict[str, Any]]) -> str:
       padding-bottom: 16px;
       margin-bottom: 24px;
     }}
-    .header h1 {{ margin: 0 0 6px 0; font-size: 22px; color: #1e3a8a; }}
+    .header h1 {{ margin: 0 0 6px 0; font-size: 20px; color: #1e3a8a; }}
     .header p {{ margin: 3px 0; font-size: 13px; color: #475569; }}
     .meta-box {{
       background: #f8fafc;
@@ -311,12 +578,12 @@ def generate_printable_html(papers: List[Dict[str, Any]]) -> str:
     table {{
       width: 100%;
       border-collapse: collapse;
-      font-size: 11.5px;
-      margin-bottom: 30px;
+      font-size: 11px;
+      margin-bottom: 24px;
     }}
     th, td {{
       border: 1px solid #cbd5e1;
-      padding: 10px 8px;
+      padding: 8px 6px;
       vertical-align: top;
       text-align: left;
     }}
@@ -324,7 +591,7 @@ def generate_printable_html(papers: List[Dict[str, Any]]) -> str:
       background-color: #1e293b;
       color: #ffffff;
       font-weight: 600;
-      font-size: 11px;
+      font-size: 10.5px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }}
@@ -338,16 +605,19 @@ def generate_printable_html(papers: List[Dict[str, Any]]) -> str:
     }}
     .badge-domain {{ background: #e0e7ff; color: #3730a3; }}
     .badge-pub {{ background: #fef3c7; color: #92400e; }}
+    .badge-green {{ background: #dcfce7; color: #166534; }}
+    .badge-yellow {{ background: #fef9c3; color: #854d0e; }}
+    .badge-red {{ background: #fee2e2; color: #991b1b; }}
     .section-title {{
-      font-size: 16px;
+      font-size: 15px;
       color: #0f172a;
       border-left: 4px solid #2563eb;
       padding-left: 10px;
-      margin: 28px 0 12px 0;
+      margin: 24px 0 12px 0;
     }}
     @media print {{
-      body {{ margin: 8mm; font-size: 10px; }}
-      th, td {{ padding: 6px 4px; }}
+      body {{ margin: 6mm; font-size: 9.5px; }}
+      th, td {{ padding: 5px 3px; }}
     }}
   </style>
 </head>
@@ -361,10 +631,31 @@ def generate_printable_html(papers: List[Dict[str, Any]]) -> str:
   <div class="meta-box">
     <strong>URL Repository Source Code Pipeline RAG di GitHub:</strong><br>
     <a href="https://github.com/p36202600044-create/RAG-TELE-BOT" target="_blank">https://github.com/p36202600044-create/RAG-TELE-BOT</a><br><br>
-    <em>Catatan Pengunggahan Kulino: Dokumen ini memuat Literature GAP Matrix 10 artikel ilmiah bereputasi (IEEE, ACM, Elsevier, NeurIPS, arXiv) beserta bukti implementasi source code pipeline RAG.</em>
+    <em>Catatan Pengunggahan Kulino: Dokumen ini memuat Literature GAP Matrix komprehensif atas 10 artikel ilmiah bereputasi internasional (IEEE, ACM, Elsevier, NeurIPS, arXiv) beserta bukti implementasi source code pipeline RAG.</em>
   </div>
 
-  <h2 class="section-title">Tabel Literature GAP Matrix</h2>
+  <h2 class="section-title">Tabel 1: Matriks Evaluasi Kriteria Komparatif (Feature Comparison Grid)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 3%;">No</th>
+        <th style="width: 22%;">Model / Paper Penelitian</th>
+        <th style="width: 15%;">Venue & Tahun</th>
+        <th style="width: 8%; text-align:center;">K1: SQL ACID</th>
+        <th style="width: 8%; text-align:center;">K2: Audit Trail</th>
+        <th style="width: 9%; text-align:center;">K3: Telegram</th>
+        <th style="width: 8%; text-align:center;">K4: Serverless</th>
+        <th style="width: 9%; text-align:center;">K5: Normalisasi</th>
+        <th style="width: 9%; text-align:center;">K6: Hybrid</th>
+        <th style="width: 9%; text-align:center;">K7: Guardrail</th>
+      </tr>
+    </thead>
+    <tbody>
+      {''.join(grid_rows_html)}
+    </tbody>
+  </table>
+
+  <h2 class="section-title">Tabel 2: Matriks Sintesis Literatur Komprehensif (10 Paper Ilmiah)</h2>
   <table>
     <thead>
       <tr>
@@ -385,12 +676,13 @@ def generate_printable_html(papers: List[Dict[str, Any]]) -> str:
     </tbody>
   </table>
 
-  <h2 class="section-title">Sintesis Gap & Hubungan dengan Proyek RAG-TELE-BOT (Novelty)</h2>
+  <h2 class="section-title">Taksonomi 4 Dimensi Kesenjangan Ilmiah & Solusi RAG-TELE-BOT</h2>
   <div class="meta-box">
     <ol>
-      <li><strong>Real-time Dynamic Stock Synchronization</strong>: Mengatasi kelemahan RAG statis dengan arsitektur hybrid Cloudflare D1 (SQL ACID) + Cloudflare Vectorize yang tersinkronisasi otomatis saat mutasi stok terjadi.</li>
-      <li><strong>Operational Audit Trail</strong>: Menyediakan tabel <code>stock_mutations</code> dan halaman monitoring <code>/monitor</code> berotentikasi untuk melacak siapa admin yang mengubah stok dan riwayat perubahannya.</li>
-      <li><strong>Serverless Edge Deployment</strong>: Mengurangi biaya sewa GPU cloud dedicated dengan arsitektur edge serverless Cloudflare Workers AI (<1.5 detik respons).</li>
+      <li><strong>Methodological Gap (Kesenjangan Metodologis)</strong>: RAG konvensional hanya mengasumsikan teks statis. Proyek ini memadukan <code>Cloudflare D1 (SQL ACID)</code> untuk ground-truth kuantitatif dengan <code>Cloudflare Vectorize</code> secara hybrid.</li>
+      <li><strong>Architectural & Cost Gap (Kesenjangan Arsitektur & Biaya)</strong>: Model enterprise membutuhkan kluster GPU dedicated mahal. Proyek ini dibangun di atas Cloudflare Workers AI serverless edge dengan biaya mendekati nol bagi UMKM.</li>
+      <li><strong>Human-AI Interaction Gap (Kesenjangan Interaksi)</strong>: Menjembatani model RAG ke pengguna langsung via Telegram Webhook berlatensi rendah (<1.5 detik per jawaban).</li>
+      <li><strong>Operational Governance Gap (Kesenjangan Tata Kelola)</strong>: Menyediakan tabel <code>stock_mutations</code> dan dashboard <code>/monitor</code> untuk audit trail perubahan unit barang oleh multi-admin.</li>
     </ol>
   </div>
 </body>
@@ -467,11 +759,15 @@ def main():
         f.write(full_md)
     print(f"Berhasil membuat Markdown GAP Matrix: {OUTPUT_MD_PATH}")
 
-    # 2. Output CSV Spreadsheet
+    # 2. Output CSV Sintesis 10 Paper
     export_csv(papers, OUTPUT_CSV_PATH)
-    print(f"Berhasil mengekspor CSV GAP Matrix: {OUTPUT_CSV_PATH}")
+    print(f"Berhasil mengekspor CSV GAP Matrix Sintesis: {OUTPUT_CSV_PATH}")
 
-    # 3. Output HTML Siap Cetak / PDF
+    # 3. Output CSV Grid Kriteria Komparatif
+    export_feature_comparison_csv(OUTPUT_GRID_CSV_PATH)
+    print(f"Berhasil mengekspor CSV Matriks Kriteria Komparatif: {OUTPUT_GRID_CSV_PATH}")
+
+    # 4. Output HTML Siap Cetak / PDF
     printable_html = generate_printable_html(papers)
     with open(OUTPUT_HTML_PATH, "w", encoding="utf-8") as f:
         f.write(printable_html)

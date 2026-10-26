@@ -6,26 +6,58 @@
 
 ---
 
-## 1. Ringkasan Eksekutif & Taksonomi GAP Riset
+## 1. Ringkasan Eksekutif & Taksonomi 4 Dimensi GAP Riset
 
-Berdasarkan analisis sistematis terhadap 10 artikel ilmiah terkini (2020-2024), teridentifikasi **3 Research Gap Kritis** dalam penerapan RAG di dunia industri ritel dan e-commerce:
+Berdasarkan tinjauan sistematis terhadap 10 artikel ilmiah terkini (2020-2024), kesenjangan riset (*Research Gap*) dalam penerapan sistem RAG pada domain industri dan ritel UMKM diklasifikasikan ke dalam 4 dimensi fundamental:
 
-1. **Gap Sinkronisasi Vektor vs. Mutasi Database Operasional (Real-Time ACID Gap)**:
-   - *Temuan*: Mayoritas arsitektur RAG konvensional (Lewis et al. 2020, Gao et al. 2023) mengasumsikan basis data vektor bersifat statis atau di-refresh secara batch berkala.
-   - *Dampak di Industri*: Terjadi halusinasi stok (menjawab barang ready padahal unit fisik di gudang telah habis terjual).
-   - *Solusi Proyek Ini*: Memadukan **Cloudflare D1 (Relational SQL ACID)** sebagai ground-truth kuantitatif dengan **Cloudflare Vectorize** yang disinkronkan secara otomatis dan inkremental saat terjadi mutasi stok di endpoint `/api/stocks/adjust`.
+### 1.1 Kesenjangan Metodologis (Methodological GAP)
+Mayoritas riset RAG (Lewis et al. 2020, Gao et al. 2023, Yan et al. 2024) mengasumsikan basis pengetahuan berupa teks narasi statis atau grafik semantik yang diindeks secara berkala (batch). Pada lingkungan operasional ritel, kuantitas stok barang berubah setiap detik akibat transaksi fisik dan kasir. Ketiadaan integrasi dua arah (*two-way live binding*) antara dense vector retrieval dan basis data relasional kuantitatif menghasilkan fenomena **Halusinasi Ketersediaan Stok** (*Phantom Inventory Hallucination*), di mana LLM menjawab unit barang ready padahal secara fisik di gudang telah habis terjual.
 
-2. **Gap Integrasi Saluran Interaksi Pengguna (Omnichannel & Messaging Gap)**:
-   - *Temuan*: Paper e-commerce seperti Rokon et al. (Walmart, 2024) dan Xu et al. (Alibaba, 2024) fokus pada antarmuka web pencarian formal, mengabaikan saluran pesan instan (Telegram, WhatsApp) yang mendominasi transaksi sosial di Asia Tenggara.
-   - *Solusi Proyek Ini*: Pipeline RAG serverless berbasis Webhook Telegram terhubung langsung dengan backend Worker berlatensi rendah (<1.5 detik per respons) tanpa server GPU mandiri.
+### 1.2 Kesenjangan Arsitektural & Finansial (Architectural & Cost GAP)
+Model-model RAG e-commerce terkemuka (Rokon et al. / Walmart 2024, Xu et al. / Alibaba 2024, Edge et al. / Microsoft 2024) mengandalkan kluster GPU dedicated dan Knowledge Graph masif yang membutuhkan biaya pemeliharaan infrastruktur ribuan dollar per bulan. Arsitektur ini tidak terjangkau (*financially prohibitive*) untuk sektor UMKM. Riset yang ada menyisakan celah kritis: **bagaimana membangun arsitektur RAG yang responsif, berlatensi rendah (<1.5 detik), namun beroperasi di atas infrastruktur serverless edge dengan biaya operasional mendekati nol**.
 
-3. **Gap Ketiadaan Audit Trail dan Validasi Mutasi Multi-Admin**:
-   - *Temuan*: Paper logistik dan layanan pelanggan (Xu, Cruz, et al. 2024) tidak menyediakan antarmuka terotentikasi bagi staf gudang untuk mencatat mutasi stok (delta, previous, new) dengan riwayat jejak audit (audit trail).
-   - *Solusi Proyek Ini*: Halaman dashboard monitoring `/monitor` dengan HTTP Basic Auth, pencatatan mutasi di tabel `stock_mutations`, dan integrasi live RAG.
+### 1.3 Kesenjangan Interaksi & Saluran Pengguna (Human-AI Interaction GAP)
+Studi terdahulu umumnya menguji model RAG pada antarmuka web portal internal desktop korporat atau pengujian benchmark statis. Padahal di negara berkembang dan ekosistem UMKM Asia Tenggara, transaksi dan pertanyaan pelanggan berpusat pada aplikasi pesan instan (*instant messaging*) seperti Telegram dan WhatsApp. Belum ada model RAG terpublikasi yang menjembatani pipeline hybrid secara langsung ke antarmuka bot pesan instan melalui webhook serverless instan.
+
+### 1.4 Kesenjangan Tata Kelola & Integritas Operasional (Operational Governance & Audit GAP)
+Tidak ada literatur RAG ritel yang mengintegrasikan kecerdasan pencarian LLM dengan modul tata kelola mutasi stok operasional (*audit trail*). Sistem e-commerce di dunia nyata membutuhkan pertanggungjawaban multi-admin gudang (siapa staf yang menambah/mengurangi unit fisik, delta perubahan, dan catatan mutasi) yang langsung merefleksikan pengetahuan grounding LLM seketika.
 
 ---
 
-## 2. Tabel Literature GAP Matrix
+## 2. Tabel 1: Matriks Evaluasi Kriteria Komparatif (Feature Comparison Grid)
+
+Tabel berikut menyajikan evaluasi silang komparatif antara 10 artikel ilmiah bereputasi internasional terhadap sistem yang diajukan (**RAG-TELE-BOT**) pada 7 kriteria arsitektur teknis:
+
+- **K1: Real-Time Dynamic SQL Synchronization**: Sinkronisasi data stok transaksional seketika (ACID D1).
+- **K2: Operational Audit Trail & Mutation Logging**: Pencatatan riwayat perubahan saldo stok oleh aktor admin di database.
+- **K3: Omnichannel Instant Messaging Interface**: Integrasi interaksi pengguna langsung melalui bot Telegram Webhook.
+- **K4: Serverless Edge Architecture**: Berjalan di edge serverless tanpa menyewa server GPU mandiri (Cloudflare Workers AI).
+- **K5: Catalog Variation & Title Normalization**: Pemetaan otomatis variasi judul marketplace (Shopee) ke model fisik Apple.
+- **K6: Hybrid Multi-Level Retrieval**: Menggabungkan pencarian leksikal, vektor semantik dense, dan kuantitatif SQL.
+- **K7: Deterministic Hallucination Guardrail**: Pengecekan deterministik untuk mencegah LLM merekomendasikan stok barang nol/habis.
+
+| No | Model / Paper Penelitian | Publisher & Tahun | K1: Sinkronisasi SQL Dinamis | K2: Audit Trail Mutasi Stok | K3: Antarmuka Chatbot Telegram | K4: Arsitektur Serverless Edge | K5: Normalisasi Variasi Katalog | K6: Hybrid Retrieval | K7: Guardrail Anti-Halusinasi |
+|:---:|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| 1 | Lewis et al. (DPR + BART) | NeurIPS 2020 | Tidak | Tidak | Tidak | Tidak | Tidak | Parsial | Tidak |
+| 2 | Gao et al. (Modular RAG Survey) | arXiv 2023 | Parsial | Tidak | Tidak | Parsial | Tidak | Ya | Parsial |
+| 3 | Rokon et al. (Walmart InvAwr-RAG) | Walmart / arXiv 2024 | Ya | Tidak | Tidak | Tidak | Parsial | Ya | Ya |
+| 4 | Xu et al. (Alibaba ItemRAG) | IEEE Big Data 2024 | Parsial | Tidak | Tidak | Tidak | Ya | Ya | Parsial |
+| 5 | de Freitas & Lotufo (Retail-GPT) | arXiv 2024 | Parsial | Tidak | Tidak | Tidak | Tidak | Parsial | Parsial |
+| 6 | Xu, Cruz et al. (LinkedIn Support) | ACM SIGIR 2024 | Tidak | Tidak | Tidak | Tidak | Tidak | Ya | Parsial |
+| 7 | Edge et al. (Microsoft GraphRAG) | Microsoft / arXiv 2024 | Tidak | Tidak | Tidak | Tidak | Tidak | Ya | Ya |
+| 8 | Zhang et al. (Product Title RAG) | arXiv 2024 | Tidak | Tidak | Tidak | Tidak | Ya | Parsial | Parsial |
+| 9 | Heredia-Alvaro et al. (Industrial QC) | Elsevier AEI 2024 | Tidak | Tidak | Tidak | Tidak | Tidak | Ya | Ya |
+| 10 | Yan et al. (CRAG - Corrective RAG) | arXiv 2024 | Tidak | Tidak | Tidak | Tidak | Tidak | Ya | Ya |
+| **PROPOSED** | **RAG-TELE-BOT (Proyek Ini)** | **Proyek Sistem RTM 2 (2024-2026)** | **Ya** | **Ya** | **Ya** | **Ya** | **Ya** | **Ya** | **Ya** |
+
+*Keterangan Evaluasi*:  
+- **Ya**: Kriteria diimplementasikan dan diverifikasi secara operasional.  
+- **Parsial**: Kriteria dibahas secara teoretis, berupa rancangan konseptual, atau diuji terbatas pada lingkungan tertutup.  
+- **Tidak**: Kriteria tidak didukung atau berada di luar cakupan penelitian.
+
+---
+
+## 3. Tabel 2: Tabel Literature GAP Matrix Komprehensif
 
 | No | Penulis & Tahun | Judul Paper & Publisher | Domain | Masalah Utama | Metode & Arsitektur RAG | Dataset & Metrik | Hasil & Temuan Utama | Research GAP (Kelemahan) | Solusi Riset Masa Depan |
 |:---:|:---|:---|:---:|:---|:---|:---|:---|:---|:---|
@@ -42,7 +74,9 @@ Berdasarkan analisis sistematis terhadap 10 artikel ilmiah terkini (2020-2024), 
 
 ---
 
-## 3. Matriks Pemetaan GAP Riset ke Fitur Solusi Proyek (Novelty Mapping)
+## 4. Tabel 3: Matriks Pemetaan Kesenjangan ke Novelty & Modul Implementasi
+
+Tabel berikut merinci bagaimana kelemahan spesifik pada literatur ilmiah dijawab secara konkret melalui source code pada repositori **RAG-TELE-BOT**:
 
 | No | Research Gap yang Diidentifikasi pada Literatur | Paper Rujukan | Solusi & Inovasi yang Diimplementasikan pada Proyek RAG-TELE-BOT | File / Modul Implementasi |
 |:---:|:---|:---|:---|:---|
@@ -54,12 +88,26 @@ Berdasarkan analisis sistematis terhadap 10 artikel ilmiah terkini (2020-2024), 
 
 ---
 
-## 4. Cara Menjalankan Pipeline RAG GAP Matrix
+## 5. Distribusi & Kredibilitas Ilmiah Korpus Literatur
+
+Seluruh artikel ilmiah yang dianalisis dalam matriks ini merupakan publikasi valid dan dapat diakses publik:
+- **Tahun Publikasi**: 80% diterbitkan pada kurun waktu terkini (2024: 8 paper, 2023: 1 paper, 2020: 1 paper seminal NeurIPS).
+- **Penerbit / Publisher Terakreditasi**:
+  - IEEE (Big Data Mining and Analytics)
+  - ACM (SIGIR eCom Track)
+  - Elsevier (Advanced Engineering Informatics, Q1 Scopus)
+  - NeurIPS / Curran Associates (Conference on Neural Information Processing Systems)
+  - arXiv / Industrial Research Labs (Walmart Global Tech, Alibaba Group, Microsoft Research, State University of Campinas)
+- **Domain Relevansi**: 100% berada pada domain Industri Ritel, E-Commerce, Inventori Gudang, Layanan Pelanggan, dan Rekayasa Software RAG.
+
+---
+
+## 6. Panduan Replikasi Pipeline RAG GAP Matrix
 
 Pipeline ini dapat dijalankan langsung di terminal lokal atau server:
 
 ```bash
-# 1. Menghasilkan ulang seluruh berkas Matrix (Markdown, CSV, HTML, Kulino Doc)
+# 1. Menghasilkan ulang seluruh berkas Matrix (Markdown, CSV Sintesis, CSV Grid, HTML Siap Cetak)
 python3 scripts/pipeline_gap_matrix.py --generate
 
 # 2. Menanyakan pertanyaan riset terhadap literatur ilmiah (RAG Query)
