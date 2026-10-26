@@ -104,11 +104,11 @@
         <tr>
           <td style="text-align:center; font-weight:bold;">1</td>
           <td><strong>Lewis et al.</strong><br><span style="color:#64748b;">(2020)</span></td>
-          <td><em>Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks</em><br><br><span class="badge badge-pub">NeurIPS / Curran Associates</span><br><small style="color:#475569;">Advances in Neural Information Processing Systems (NeurIPS 2020)</small></td>
+          <td><em>Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks</em><br><br><span class="badge badge-pub">NeurIPS / Curran Associates</span><br><small style="color:#475569;">Advances in Neural Information Processing Systems (NeurIPS 2020), Vol. 33, pp. 9459-9474</small></td>
           <td><span class="badge badge-domain">Umum & Industri (Knowledge Retrieval)</span></td>
           <td>Model bahasa berbasis transformer parametrik murni rentan terhadap halusinasi pengetahuan faktual dan tidak mampu memperbarui basis pengetahuan dinamis tanpa proses fine-tuning ulang yang mahal secara komputasi.</td>
           <td>
-            <strong>Retrieval:</strong> Dense Retrieval (DPR - Dense Passage Retrieval)<br>
+            <strong>Retrieval:</strong> Dense Passage Retrieval (DPR) berbasis Bi-Encoder<br>
             <strong>Embedding:</strong> BERT-based Bi-Encoder (768-dim)<br>
             <strong>LLM:</strong> BART (Bidirectional and Auto-Regressive Transformers)<br>
             <strong>Vector DB:</strong> FAISS Flat/IVF Index
@@ -124,13 +124,13 @@
         
         <tr>
           <td style="text-align:center; font-weight:bold;">2</td>
-          <td><strong>Gao et al.</strong><br><span style="color:#64748b;">(2024)</span></td>
-          <td><em>Retrieval-Augmented Generation for Large Language Models: A Survey</em><br><br><span class="badge badge-pub">IEEE / arXiv</span><br><small style="color:#475569;">IEEE Transactions on Knowledge and Data Engineering (TKDE) / arXiv:2312.10997</small></td>
+          <td><strong>Gao et al.</strong><br><span style="color:#64748b;">(2023)</span></td>
+          <td><em>Retrieval-Augmented Generation for Large Language Models: A Survey</em><br><br><span class="badge badge-pub">arXiv</span><br><small style="color:#475569;">arXiv preprint arXiv:2312.10997 (2023)</small></td>
           <td><span class="badge badge-domain">Industri & Enterprise Software</span></td>
           <td>Kurangnya taksonomi formal dan standardisasi arsitektur RAG (Naive vs Advanced vs Modular) dalam menangani tantangan retrieval precision, recall, context relevance, dan generation faithfulness pada skenario enterprise.</td>
           <td>
             <strong>Retrieval:</strong> Pre-retrieval (query rewrite), In-retrieval (hybrid dense-sparse + reranking), Post-retrieval (context compression & chunk routing)<br>
-            <strong>Embedding:</strong> Multi-vector & Cross-Encoder (BGE-M3, Cohere Rerank)<br>
+            <strong>Embedding:</strong> Multi-vector & Cross-Encoder (BGE, Cohere Rerank)<br>
             <strong>LLM:</strong> LLaMA-2/3, GPT-4, Mistral<br>
             <strong>Vector DB:</strong> Distributed Vector DB (Milvus, Pinecone, Qdrant)
           </td>
@@ -145,71 +145,71 @@
         
         <tr>
           <td style="text-align:center; font-weight:bold;">3</td>
-          <td><strong>Chen et al.</strong><br><span style="color:#64748b;">(2024)</span></td>
-          <td><em>RAG-Commerce: Retrieval-Augmented Generation for Product Recommendations and Dynamic Inventory Inquiry in E-Commerce</em><br><br><span class="badge badge-pub">ACM (Association for Computing Machinery)</span><br><small style="color:#475569;">ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR 2024)</small></td>
-          <td><span class="badge badge-domain">Industri (E-Commerce & Retail)</span></td>
-          <td>Sistem chatbot e-commerce sering memberikan rekomendasi produk yang kehabisan stok (stockout) atau salah mengartikan variasi SKU kompleks karena adanya jeda waktu (indexing latency) antara pembaruan database ERP/gudang dan vector store.</td>
+          <td><strong>Rokon et al.</strong><br><span style="color:#64748b;">(2024)</span></td>
+          <td><em>Next-Gen Sponsored Search: Crafting the Perfect Query with Inventory-Aware RAG (InvAwr-RAG) Based GenAI</em><br><br><span class="badge badge-pub">arXiv / Walmart Labs</span><br><small style="color:#475569;">arXiv preprint arXiv:2407.03880 (Walmart Global Tech, 2024)</small></td>
+          <td><span class="badge badge-domain">Industri (E-Commerce & Retail Inventory Management)</span></td>
+          <td>Sistem pencarian dan iklan bersponsor e-commerce sering menghasilkan zero-result atau menampilkan produk yang kehabisan stok (stockout) karena query expansion tidak mempertimbangkan kondisi inventori dan ketersediaan stok aktual di gudang secara real-time.</td>
           <td>
-            <strong>Retrieval:</strong> Two-Stage Retrieval: Catalog Vector Search + Real-Time SQL Inventory Injection<br>
-            <strong>Embedding:</strong> Domain-Adapted Sentence-BERT (Product-BERT 768-dim)<br>
-            <strong>LLM:</strong> LLaMA-3-8B-Instruct via vLLM inference engine<br>
-            <strong>Vector DB:</strong> ChromaDB with metadata filtering & Redis cache layer
+            <strong>Retrieval:</strong> Inventory-Aware Retrieval: Real-Time Catalog Filtering + Dynamic Query Rewriting<br>
+            <strong>Embedding:</strong> Domain-adapted E-Commerce Dense Embeddings<br>
+            <strong>LLM:</strong> Fine-Tuned LLMs with Inventory Constraint Guardrails<br>
+            <strong>Vector DB:</strong> Enterprise In-Memory Vector Store + Live Inventory Cache
           </td>
           <td>
-            <strong>Data:</strong> Shopee & Amazon Electronics / Mobile Accessories Corpus (25.000 SKU)<br>
-            <strong>Metrik:</strong> Stock Accuracy Rate (SAR), Hit@5, MRR, Conversion Rate, Response Latency (ms)
+            <strong>Data:</strong> Walmart Production E-Commerce Sponsored Search Query & Catalog Logs<br>
+            <strong>Metrik:</strong> Zero-Result Reduction Rate, Return on Ad Spend (ROAS), Click-Through Rate (CTR), Latency (ms)
           </td>
-          <td>Mencapai akurasi status stok 99.4% (menghilangkan halusinasi stok barang habis) dan meningkatkan kepuasan pelanggan sebesar 28.5% dibandingkan model retrieval katalog murni.</td>
-          <td style="background-color: #fef2f2; color:#991b1b; font-weight:600;">Belum mendukung audit trail mutasi stok multi-admin (stock mutations log); arsitektur server terpusat membutuhkan biaya operasional cloud tinggi; belum diintegrasikan ke messaging bot instan seperti Telegram/WhatsApp.</td>
-          <td style="background-color: #f0fdf4; color:#166534;">Penerapan edge computing serverless untuk menghilangkan biaya VM dedicated, integrasi webhook pesan instan omnichannel, dan otomatisasi sinkronisasi vektor inkremental.</td>
+          <td>InvAwr-RAG secara signifikan memangkas zero-result ad queries, meningkatkan relevansi produk sponsor dengan ketersediaan stok nyata, dan meningkatkan konversi belanja serta ROI pengiklan di platform retail.</td>
+          <td style="background-color: #fef2f2; color:#991b1b; font-weight:600;">Pipeline dirancang untuk pencarian iklan berorientasi server terpusat; belum menyediakan antarmuka terotentikasi untuk staf operasional gudang dalam memantau dan mengubah saldo stok fisik secara interaktif.</td>
+          <td style="background-color: #f0fdf4; color:#166534;">Integrasi sistem audit mutasi stok terdistribusi dan penghubungan langsung ke platform pesan instan (conversational commerce).</td>
         </tr>
         
         <tr>
           <td style="text-align:center; font-weight:bold;">4</td>
-          <td><strong>Wang et al.</strong><br><span style="color:#64748b;">(2024)</span></td>
-          <td><em>Industrial Knowledge Management and Equipment Troubleshooting via Domain-Specific Retrieval-Augmented Generation</em><br><br><span class="badge badge-pub">IEEE (Institute of Electrical and Electronics Engineers)</span><br><small style="color:#475569;">IEEE Transactions on Services Computing (Volume 17, Issue 3)</small></td>
-          <td><span class="badge badge-domain">Industri (Manufacturing & Industrial Equipment)</span></td>
-          <td>Manual teknis peralatan industri berskala ribuan halaman memiliki format heterogen (PDF tabel, bagan aliran, teks hierarkis) yang menyulitkan teknisi lapangan menemukan solusi troubleshoot secara cepat tanpa halusinasi parameter teknis.</td>
+          <td><strong>Xu et al.</strong><br><span style="color:#64748b;">(2024)</span></td>
+          <td><em>ItemRAG: Retrieval-Augmented Generation with Item-Based Knowledge Computing for E-Commerce Product Question Answering</em><br><br><span class="badge badge-pub">IEEE</span><br><small style="color:#475569;">IEEE Big Data Mining and Analytics (Alibaba Group, 2024)</small></td>
+          <td><span class="badge badge-domain">Industri (E-Commerce Product Question Answering)</span></td>
+          <td>RAG konvensional (CoupledRAG) menggabungkan template tanya-jawab langsung dengan produk spesifik, menyebabkan basis pengetahuan membengkak secara masif, sulit diperbarui saat spesifikasi/stok berubah, dan boros komputasi pada jutaan SKU katalog.</td>
           <td>
-            <strong>Retrieval:</strong> Hierarchical Chunking + Hybrid Dense-Sparse BM25 Retrieval<br>
-            <strong>Embedding:</strong> Text-Embedding-Ada-002 & BAAI/bge-large-zh<br>
-            <strong>LLM:</strong> ChatGLM3-6B & GPT-3.5-Turbo<br>
-            <strong>Vector DB:</strong> Milvus Vector Database with HNSW index
+            <strong>Retrieval:</strong> Decoupled Knowledge Retrieval with Grouped Indexing & State Analysis<br>
+            <strong>Embedding:</strong> Item-Knowledge Graph Dense Embeddings<br>
+            <strong>LLM:</strong> Domain-adapted E-Commerce Instruction LLMs<br>
+            <strong>Vector DB:</strong> Grouped Hierarchical Vector Index
           </td>
           <td>
-            <strong>Data:</strong> Industrial Turbine & CNC Machinery Maintenance Manuals (12.000 chunks)<br>
-            <strong>Metrik:</strong> ROUGE-1, ROUGE-2, ROUGE-L, Human Expert Precision Score, Latency
+            <strong>Data:</strong> Alibaba E-Commerce Product QA Corpus (Millions of dynamic SKUs)<br>
+            <strong>Metrik:</strong> Precision, Recall, F1-Score, Knowledge Update Latency, Factual Correctness
           </td>
-          <td>Mengurangi waktu pencarian panduan troubleshoot dari rata-rata 18.4 menit menjadi 14.2 detik dengan tingkat akurasi langkah teknis 94.8% dan zero safety-critical hallucination.</td>
-          <td style="background-color: #fef2f2; color:#991b1b; font-weight:600;">Sangat bergantung pada chunking statis manual; performa menurun drastis ketika teknisi menanyakan ketersediaan suku cadang fisik secara langsung (ketiadaan integrasi data stok gudang).</td>
-          <td style="background-color: #f0fdf4; color:#166534;">Koneksi bidirectional antara RAG manual teknis dan sistem ERP pergudangan suku cadang secara real-time.</td>
+          <td>ItemRAG secara substansial memperkecil ukuran basis pengetahuan katalog, mempercepat pembaruan atribut barang secara dinamis, dan meningkatkan presisi serta faktualitas jawaban tanya-jawab produk dibanding CoupledRAG.</td>
+          <td style="background-color: #fef2f2; color:#991b1b; font-weight:600;">Fokus pada atribut statis dan semi-dinamis katalog; belum mengintegrasikan mekanisme ACID mutasi inventori langsung dari transaksi kasir/admin gudang.</td>
+          <td style="background-color: #f0fdf4; color:#166534;">Pengembangan arsitektur hybrid database transaksional (SQL) dan vektor edge-native untuk sinkronisasi kuantitas stok seketika.</td>
         </tr>
         
         <tr>
           <td style="text-align:center; font-weight:bold;">5</td>
-          <td><strong>Zhang et al.</strong><br><span style="color:#64748b;">(2024)</span></td>
-          <td><em>Enhancing Customer Support and Stock Synchronization in Multichannel Retail with Real-Time RAG Systems</em><br><br><span class="badge badge-pub">Springer Nature</span><br><small style="color:#475569;">Electronic Commerce Research (Springer Nature, 2024)</small></td>
-          <td><span class="badge badge-domain">Industri (Retail & Multichannel Inventory)</span></td>
-          <td>Inkonsistensi data katalog produk pada toko online di marketplace (Shopee, Tokopedia) dengan stok fisik gudang toko ritel menyebabkan cancel order otomatis dan penalti performa toko.</td>
+          <td><strong>Xu et al.</strong><br><span style="color:#64748b;">(2024)</span></td>
+          <td><em>Retrieval-Augmented Generation with Knowledge Graphs for Customer Service Question Answering</em><br><br><span class="badge badge-pub">ACM / arXiv</span><br><small style="color:#475569;">ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR 2024 eCom / Industry Track) / arXiv:2404.17723</small></td>
+          <td><span class="badge badge-domain">Industri (Customer Service & Support QA)</span></td>
+          <td>RAG konvensional memperlakukan riwayat tiket customer service sebagai teks polos datar tanpa struktur, sehingga mengabaikan relasi hierarkis antar-masalah (intra-issue) dan keterkaitan antar-tiket (inter-issue), yang menyebabkan kegagalan retrieval pada pertanyaan pelanggan yang kompleks.</td>
           <td>
-            <strong>Retrieval:</strong> Event-Driven RAG with Webhook Inventory Triggers<br>
-            <strong>Embedding:</strong> BAAI/bge-m3 (Multilingual & Dense+Sparse Lexical representation)<br>
-            <strong>LLM:</strong> LLaMA-3-8B-Instruct with Indonesian fine-tuning<br>
-            <strong>Vector DB:</strong> Cloudflare Vectorize (Serverless Vector Index)
+            <strong>Retrieval:</strong> Dual-level Knowledge Graph Sub-graph Retrieval + Context Assembly<br>
+            <strong>Embedding:</strong> Text-Embedding-Ada-002 & Graph Node Embeddings<br>
+            <strong>LLM:</strong> GPT-3.5-Turbo & GPT-4 with structured prompt grounding<br>
+            <strong>Vector DB:</strong> Graph Database + Vector Index Hybrid
           </td>
           <td>
-            <strong>Data:</strong> Multichannel Smartphone Accessories Catalog (1.500 SKU, 35 model variasi fisik)<br>
-            <strong>Metrik:</strong> Inventory Sync Latency (ms), Factual Consistency Score (0-1), Customer Inquiries Resolved (%)
+            <strong>Data:</strong> LinkedIn Production Customer Support Tickets & Resolution Benchmark<br>
+            <strong>Metrik:</strong> Mean Reciprocal Rank (MRR), BLEU-4, Human Resolution Time Reduction (%)
           </td>
-          <td>Latensi sinkronisasi stok ke vektor berhasil ditekan hingga <800 ms per mutasi; berhasil memproses 10.000 inquiry pelanggan per hari dengan biaya infrastruktur 85% lebih murah dibanding server cloud berbasis GPU mandiri.</td>
-          <td style="background-color: #fef2f2; color:#991b1b; font-weight:600;">Studi terbatas pada single-node serverless worker; belum menguji ketahanan model saat terjadi konkurensi input stok massal (mass update Excel) dari banyak admin secara bersamaan.</td>
-          <td style="background-color: #f0fdf4; color:#166534;">Pengembangan batch vectorization background pipeline dan automated discrepancy reconciliation antara template mass update e-commerce dan database inventori lokal.</td>
+          <td>Meningkatkan skor MRR retrieval sebesar 77.6%, meningkatkan skor BLEU teks sebesar 0.32, dan memangkas waktu resolusi masalah pelanggan (median resolution time) sebesar 28.6% dalam operasional nyata di LinkedIn.</td>
+          <td style="background-color: #fef2f2; color:#991b1b; font-weight:600;">Biaya pembangunan dan pemeliharaan graf pelanggan sangat tinggi; belum menghubungkan sistem layanan pelanggan ke status kuantitas inventori barang secara fisik.</td>
+          <td style="background-color: #f0fdf4; color:#166534;">Penyederhanaan struktur graf menggunakan metadata relasional tabel (SQL/D1) yang lebih ringan dan ramah biaya serverless.</td>
         </tr>
         
         <tr>
           <td style="text-align:center; font-weight:bold;">6</td>
           <td><strong>Edge et al.</strong><br><span style="color:#64748b;">(2024)</span></td>
-          <td><em>From Local to Global: A Graph RAG Approach to Query-Focused Summarization</em><br><br><span class="badge badge-pub">Microsoft Research / arXiv</span><br><small style="color:#475569;">Microsoft Research Technical Report / arXiv:2404.16130</small></td>
+          <td><em>From Local to Global: A Graph RAG Approach to Query-Focused Summarization</em><br><br><span class="badge badge-pub">Microsoft Research / arXiv</span><br><small style="color:#475569;">Microsoft Research Technical Report / arXiv:2404.16130 (2024)</small></td>
           <td><span class="badge badge-domain">Industri & Enterprise Intelligence</span></td>
           <td>RAG berbasis vektor standar (baseline RAG) gagal total pada pertanyaan komprehensif global seperti 'Apa tema utama dan tren defect produk dari seluruh keluhan pelanggan bulan ini?' karena hanya mengambil fragmen teks lokal k-teratas.</td>
           <td>
@@ -229,86 +229,86 @@
         
         <tr>
           <td style="text-align:center; font-weight:bold;">7</td>
-          <td><strong>Li et al.</strong><br><span style="color:#64748b;">(2024)</span></td>
-          <td><em>Enterprise RAG: Scalable Knowledge Retrieval over Hybrid Tabular-Unstructured Business Warehouses</em><br><br><span class="badge badge-pub">IEEE</span><br><small style="color:#475569;">IEEE Access (Volume 12, pp. 48102-48118)</small></td>
-          <td><span class="badge badge-domain">Industri (Enterprise ERP & Warehousing)</span></td>
-          <td>Sebagian besar data operasional perusahaan terbagi dua: data terstruktur angka (kuantitas stok, harga, tanggal di SQL) dan data tidak terstruktur (deskripsi produk, spesifikasi bahan, testimoni). RAG biasa gagal menggabungkan query gabungan seperti 'Cari casing tahan banting dengan stok >20 unit'.</td>
+          <td><strong>Heredia-Álvaro et al.</strong><br><span style="color:#64748b;">(2024)</span></td>
+          <td><em>An advanced retrieval-augmented generation system for manufacturing quality control</em><br><br><span class="badge badge-pub">Elsevier</span><br><small style="color:#475569;">Advanced Engineering Informatics (Elsevier), Volume 64, Article 103007</small></td>
+          <td><span class="badge badge-domain">Industri (Manufacturing & Industrial Quality Control)</span></td>
+          <td>Pada lantai produksi manufaktur, diagnosis cacat produk memerlukan penalaran cepat atas manual teknik dan standar rekayasa yang sangat spesifik, di mana LLM umum sering mengalami halusinasi istilah teknis dan prosedur koreksi.</td>
           <td>
-            <strong>Retrieval:</strong> Hybrid Text-to-SQL + Vector Search Fusion (Tabular-Semantic RAG)<br>
-            <strong>Embedding:</strong> All-MiniLM-L6-v2 & BGE-Base-en<br>
-            <strong>LLM:</strong> CodeLLaMA-13B & LLaMA-3-70B-Instruct<br>
-            <strong>Vector DB:</strong> pgvector (PostgreSQL) with relational foreign key joins
+            <strong>Retrieval:</strong> Advanced Hybrid RAG with Industrial Domain Pre/Post-Processing<br>
+            <strong>Embedding:</strong> OpenAI Text-Embedding & Domain Vector Representations<br>
+            <strong>LLM:</strong> GPT-4 / GPT-3.5 with Engineering Context Injection<br>
+            <strong>Vector DB:</strong> Chroma / FAISS Vector Index with Metadata Filtering
           </td>
           <td>
-            <strong>Data:</strong> Spider & BIRD Benchmark adapted to Enterprise Retail Supply Chain<br>
-            <strong>Metrik:</strong> Execution Accuracy (EX), Execution with Semantic Recall (ESR), P@5, Latency
+            <strong>Data:</strong> Industrial Ceramic Tile Manufacturing Quality Control & Troubleshooting Records<br>
+            <strong>Metrik:</strong> Diagnosis Accuracy (%), Root-Cause Identification Precision, Response Time (s)
           </td>
-          <td>Mencapai peningkatan akurasi retrieval gabungan (tabular + semantik) sebesar 43.8% dibandingkan pendekatan sequential re-ranking dan mengurangi kegagalan halusinasi angka kuantitatif hingga 0%.</td>
-          <td style="background-color: #fef2f2; color:#991b1b; font-weight:600;">Memerlukan database server PostgreSQL besar yang memakan memori RAM tinggi; tidak dirancang untuk lingkungan Edge Serverless dengan cold-start constraints ketat.</td>
-          <td style="background-color: #f0fdf4; color:#166534;">Penerapan arsitektur Serverless D1 SQLite + Cloudflare Vectorize yang ringan dan ramah biaya untuk UMKM dan toko ritel independen.</td>
+          <td>Menghasilkan peningkatan presisi diagnosis cacat manufaktur yang signifikan dan memangkas waktu pengambilan keputusan teknis operator lantai pabrik tanpa kesalahan prosedur keselamatan.</td>
+          <td style="background-color: #fef2f2; color:#991b1b; font-weight:600;">Sistem beroperasi pada data batch statis pedoman pabrik; belum terintegrasi secara otomatis dengan database stok suku cadang atau komponen pengganti secara langsung.</td>
+          <td style="background-color: #f0fdf4; color:#166534;">Penyatuan sistem diagnosis teknis RAG dengan sistem informasi pergudangan material dan suku cadang secara real-time.</td>
         </tr>
         
         <tr>
           <td style="text-align:center; font-weight:bold;">8</td>
-          <td><strong>Patel et al.</strong><br><span style="color:#64748b;">(2024)</span></td>
-          <td><em>Hybrid Dense-Sparse RAG for Supply Chain Management and Stock Replenishment Decision Support</em><br><br><span class="badge badge-pub">Elsevier</span><br><small style="color:#475569;">Computers in Industry (Elsevier, Volume 158, 104089)</small></td>
-          <td><span class="badge badge-domain">Industri (Supply Chain & Inventory Replenishment)</span></td>
-          <td>Keputusan restock barang di gudang sering terlambat karena manajer gudang harus menganalisis data historis logistik berformat teks bersamaan dengan ambang batas (threshold) kuantitas fisik yang tersebar di beberapa lembar kerja (spreadsheet).</td>
+          <td><strong>Yan et al.</strong><br><span style="color:#64748b;">(2024)</span></td>
+          <td><em>Corrective Retrieval Augmented Generation (CRAG)</em><br><br><span class="badge badge-pub">arXiv</span><br><small style="color:#475569;">arXiv preprint arXiv:2401.15884 (2024)</small></td>
+          <td><span class="badge badge-domain">Industri & Software (Self-Corrective RAG Framework)</span></td>
+          <td>RAG standar sangat rapuh terhadap dokumen hasil retrieval yang tidak relevan, bising (noisy), atau mengandung informasi palsu, sehingga generator LLM tetap menghasilkan jawaban yang salah (garbage-in garbage-out).</td>
           <td>
-            <strong>Retrieval:</strong> Hybrid BM25 + Dense Semantic Matching with Reciprocal Rank Fusion (RRF)<br>
-            <strong>Embedding:</strong> Instructor-XL & BAAI/bge-m3<br>
-            <strong>LLM:</strong> Mistral-7B-Instruct-v0.2 & Claude 3 Sonnet<br>
-            <strong>Vector DB:</strong> Weaviate Hybrid Index
+            <strong>Retrieval:</strong> Self-Corrective Retrieval with Confidence Evaluation & Web Search Fallback<br>
+            <strong>Embedding:</strong> Contriever & BGE Embeddings<br>
+            <strong>LLM:</strong> LLaMA-2-7B, ChatGPT<br>
+            <strong>Vector DB:</strong> Standard Vector Index + Dynamic Web Search Engine API
           </td>
           <td>
-            <strong>Data:</strong> Consumer Electronics Wholesale Supply Chain Records (3 tahun data pergerakan barang)<br>
-            <strong>Metrik:</strong> Restock Precision Rate, Stockout Reduction Rate, Inventory Turnover Rate, BLEU-4
+            <strong>Data:</strong> PopQA, Biography, PubHealth, Arc-Challenge<br>
+            <strong>Metrik:</strong> Accuracy (%), Hallucination Reduction Rate, Factual Precision
           </td>
-          <td>Menurunkan insiden stockout hingga 34.2% dalam periode 6 bulan dan mengotomatisasi pembuatan rekomendasi prioritas restock berkategori stok kritis (<=5 unit) dan stok aman (>30 unit).</td>
-          <td style="background-color: #fef2f2; color:#991b1b; font-weight:600;">Sistem bersifat batch analitik mingguan, belum real-time streaming; input stok masih bergantung pada file Excel statis tanpa UI monitoring berbasis web live dan tanpa integrasi bot chat interaktif.</td>
-          <td style="background-color: #f0fdf4; color:#166534;">Pengembangan web dashboard interaktif real-time dengan audit mutasi per user dan integrasi bot notifikasi langsung ke smartphone staf gudang.</td>
+          <td>Meningkatkan akurasi pembangkitan teks secara drastis di 4 benchmark publik; mampu mendeteksi konteks yang salah dan secara dinamis mencari sumber alternatif secara otomatis.</td>
+          <td style="background-color: #fef2f2; color:#991b1b; font-weight:600;">Evaluator dokumen menambah latensi inferensi tambahan; belum dioptimalkan untuk data numerik transaksional inventori yang membutuhkan kepastian nilai 100%.</td>
+          <td style="background-color: #f0fdf4; color:#166534;">Penerapan evaluasi kepercayaan berbasis aturan deterministik (SQL constraint checking) untuk domain e-commerce dan pergudangan.</td>
         </tr>
         
         <tr>
           <td style="text-align:center; font-weight:bold;">9</td>
-          <td><strong>Zhang et al.</strong><br><span style="color:#64748b;">(2023)</span></td>
-          <td><em>FinRAG: Retrieval-Augmented Generation for Financial Reporting and Regulatory Compliance</em><br><br><span class="badge badge-pub">ACM</span><br><small style="color:#475569;">ACM International Conference on AI in Finance (ICAIF 2023)</small></td>
-          <td><span class="badge badge-domain">Keuangan (Financial & Banking Compliance)</span></td>
-          <td>Laporan keuangan tahunan (10-K, 10-Q) memiliki tabel numerik padat dan catatan kaki hukum yang kompleks. Model LLM generik sering mengalami halusinasi kalkulasi rasio keuangan dan kutipan regulasi.</td>
+          <td><strong>Islam et al.</strong><br><span style="color:#64748b;">(2023)</span></td>
+          <td><em>FinanceBench: A New Benchmark for Financial Question Answering</em><br><br><span class="badge badge-pub">arXiv</span><br><small style="color:#475569;">arXiv preprint arXiv:2311.11944 (Patronus AI & Contextual AI, 2023)</small></td>
+          <td><span class="badge badge-domain">Keuangan (Financial Reporting & Regulatory Disclosure QA)</span></td>
+          <td>Laporan keuangan tahunan (SEC 10-K, 10-Q) memiliki tabel numerik padat dan catatan kaki hukum yang kompleks. Model RAG komersial standar gagal atau menolak menjawab hingga 81% pertanyaan finansial karena keterbatasan chunking pada tabel numerik.</td>
           <td>
-            <strong>Retrieval:</strong> Table-Aware Chunking + Dense Bi-Encoder Retrieval<br>
-            <strong>Embedding:</strong> FinBERT & BGE-Large-EN<br>
-            <strong>LLM:</strong> LLaMA-2-70B-Chat with Financial LoRA<br>
-            <strong>Vector DB:</strong> Qdrant with payload numerical filtering
+            <strong>Retrieval:</strong> Benchmark Suite for Dense Vector vs Hybrid Table-Aware Retrieval<br>
+            <strong>Embedding:</strong> Text-Embedding-Ada-002, BGE-Large, Cohere Embed<br>
+            <strong>LLM:</strong> GPT-4, Claude-2, LLaMA-2-70B<br>
+            <strong>Vector DB:</strong> Chroma, Pinecone Vector Stores
           </td>
           <td>
-            <strong>Data:</strong> FinQA, TAT-QA, SEC EDGAR 10-K Filings<br>
-            <strong>Metrik:</strong> Numerical Exact Match (N-EM), Faithfulness Score, Hallucination Frequency
+            <strong>Data:</strong> FinanceBench (10.231 pertanyaan terverifikasi analis keuangan dari laporan SEC publik)<br>
+            <strong>Metrik:</strong> Accuracy, Answer Correctness, Evidence Retrieval Recall, Hallucination Rate
           </td>
-          <td>Meningkatkan akurasi kalkulasi numerik dari 61.2% menjadi 88.7% dan memastikan setiap rujukan laporan memiliki sitasi nomor halaman dan tanggal yang dapat diverifikasi secara hukum.</td>
-          <td style="background-color: #fef2f2; color:#991b1b; font-weight:600;">Performa menurun drastis pada data keuangan transaksi frekuensi tinggi (real-time market prices) yang berubah per milidetik; biaya indexing dokumen finansial tebal sangat mahal.</td>
-          <td style="background-color: #f0fdf4; color:#166534;">Penyatuan cache in-memory untuk data real-time dengan vector store jangka panjang untuk arsip regulasi.</td>
+          <td>Menemukan bahwa RAG standar berbasis vektor murni hanya mencapai akurasi <20% pada kalkulasi rasio keuangan kompleks, membuktikan perlunya hybrid table-aware retrieval dan verifikasi numerik eksplisit.</td>
+          <td style="background-color: #fef2f2; color:#991b1b; font-weight:600;">Studi berfokus pada evaluasi benchmark dokumen statis; tidak menguji performa pada data transaksi keuangan frekuensi tinggi (real-time stream prices).</td>
+          <td style="background-color: #f0fdf4; color:#166534;">Integrasi database relasional kuantitatif dengan retrieval teks untuk menghilangkan kesalahan kalkulasi finansial.</td>
         </tr>
         
         <tr>
           <td style="text-align:center; font-weight:bold;">10</td>
           <td><strong>Zakka et al.</strong><br><span style="color:#64748b;">(2024)</span></td>
-          <td><em>Almanac: Retrieval-Augmented Language Models for Clinical Guidelines and Medical Decision Support</em><br><br><span class="badge badge-pub">Springer Nature</span><br><small style="color:#475569;">Nature Medicine / NPJ Digital Medicine (2024)</small></td>
-          <td><span class="badge badge-domain">Kesehatan (Clinical & Healthcare Medicine)</span></td>
-          <td>Pedoman klinis dan interaksi obat berubah secara berkala. Kesalahan faktual atau halusinasi dosis oleh LLM dapat membahayakan keselamatan pasien pada setting konsultasi medis.</td>
+          <td><em>Almanac: Retrieval-Augmented Language Models for Clinical Medicine</em><br><br><span class="badge badge-pub">Massachusetts Medical Society (NEJM) / arXiv</span><br><small style="color:#475569;">NEJM AI (New England Journal of Medicine AI, 2024) / arXiv:2303.01229</small></td>
+          <td><span class="badge badge-domain">Kesehatan (Clinical Guidelines & Medical Decision Support)</span></td>
+          <td>Pedoman klinis dan interaksi obat berubah secara berkala. Kesalahan faktual atau halusinasi dosis oleh LLM dapat membahayakan keselamatan pasien pada konsultasi medis klinis.</td>
           <td>
-            <strong>Retrieval:</strong> Verified Source RAG with Strict Guideline Filtering<br>
-            <strong>Embedding:</strong> PubMedBERT & Med-CPT<br>
-            <strong>LLM:</strong> PaLM-2 / Med-PaLM & GPT-4<br>
-            <strong>Vector DB:</strong> FAISS with Medical Ontology Metadata Filtering (UMLS)
+            <strong>Retrieval:</strong> Verified Clinical Source Retrieval with Strict Medical Guideline Filtering<br>
+            <strong>Embedding:</strong> PubMedBERT & Med-CPT Dense Embeddings<br>
+            <strong>LLM:</strong> PaLM-2 / GPT-4 with Clinical Safety Guardrails<br>
+            <strong>Vector DB:</strong> Curated Clinical Vector Store with Medical Ontology Metadata Filtering
           </td>
           <td>
-            <strong>Data:</strong> UpToDate, PubMed Central, CDC/WHO Clinical Practice Guidelines<br>
-            <strong>Metrik:</strong> Clinical Factuality Score (expert physician evaluated), Hallucination Rate, Citation Accuracy
+            <strong>Data:</strong> Almanac Clinical Benchmark (314 pertanyaan klinis kompleks lintas 9 spesialisasi medis dievaluasi oleh dewan dokter)<br>
+            <strong>Metrik:</strong> Clinical Factuality Score, Completeness, User Preference, Adversarial Safety Rate
           </td>
-          <td>Mencapai tingkat akurasi klinis 97.2% dan zero critical medication dosage hallucination, dinilai oleh dewan dokter spesialis independen.</td>
-          <td style="background-color: #fef2f2; color:#991b1b; font-weight:600;">Ketergantungan tinggi pada kurasi basis data tertutup; regulasi privasi data pasien (HIPAA/GDPR) membatasi penggunaan API cloud publik; belum mendukung respon multimodal instan di perangkat bergerak tenaga medis.</td>
-          <td style="background-color: #f0fdf4; color:#166534;">Local on-device RAG dengan quantized model untuk rumah sakit daerah terpencil tanpa konektivitas internet stabil.</td>
+          <td>Almanac secara signifikan mengungguli model LLM tanpa retrieval (ChatGPT-4, Bard) dalam hal faktualitas medis, kelengkapan rujukan pedoman klinis, dan keamanan adversarial tanpa halusinasi dosis kritis.</td>
+          <td style="background-color: #fef2f2; color:#991b1b; font-weight:600;">Ketergantungan tinggi pada basis data medis tertutup terkurasi; regulasi privasi HIPAA membatasi pengiriman data rekam medis ke API cloud publik; belum mendukung respon multimodal instan di perangkat bergerak tenaga medis.</td>
+          <td style="background-color: #f0fdf4; color:#166534;">Penerapan model lokal on-device quantized untuk rumah sakit daerah dengan infrastruktur terbatas dan tanpa konektivitas internet stabil.</td>
         </tr>
         
     </tbody>
