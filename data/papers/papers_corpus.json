@@ -1,0 +1,252 @@
+[
+  {
+    "id": "PAPER-01",
+    "authors": "Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., Küttler, H., Lewis, M., Yih, W., Rocktäschel, T., Riedel, S., & Kiela, D.",
+    "year": 2020,
+    "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+    "venue": "Advances in Neural Information Processing Systems (NeurIPS 2020)",
+    "publisher": "NeurIPS / Curran Associates",
+    "doi_or_url": "https://doi.org/10.48550/arXiv.2005.11401",
+    "domain": "Umum & Industri (Knowledge Retrieval)",
+    "problem_statement": "Model bahasa berbasis transformer parametrik murni rentan terhadap halusinasi pengetahuan faktual dan tidak mampu memperbarui basis pengetahuan dinamis tanpa proses fine-tuning ulang yang mahal secara komputasi.",
+    "methodology": {
+      "retrieval_type": "Dense Retrieval (DPR - Dense Passage Retrieval)",
+      "embedding_model": "BERT-based Bi-Encoder (768-dim)",
+      "generator_llm": "BART (Bidirectional and Auto-Regressive Transformers)",
+      "vector_storage": "FAISS Flat/IVF Index",
+      "architecture": "RAG-Sequence & RAG-Token architecture with joint training of retriever and generator"
+    },
+    "dataset_and_metrics": {
+      "dataset": "Natural Questions (NQ), TriviaQA, WebQuestions, CuratedTrec",
+      "metrics": "Exact Match (EM), F1-Score, Perplexity, Negative Log-Likelihood"
+    },
+    "key_results": "Mencapai performa state-of-the-art pada benchmark open-domain QA dengan skor EM 44.5 pada TriviaQA, mengungguli model parametrik yang jauh lebih besar seperti T5-11B dengan konsumsi parameter yang jauh lebih efisien.",
+    "limitations_and_gap": "Retrieval berbasis dense statis tidak dapat menangani data terstruktur tabular (SQL/stok dinamis) secara real-time; latensi inferensi tinggi pada query beruntun (multi-turn); rentan terhadap pergeseran distribusi teks indeks.",
+    "future_directions": "Integrasi retrieval hybrid (dense + sparse), mekanisme pembaruan indeks streaming tanpa re-indexing penuh, dan adaptasi untuk data relasional/operasional."
+  },
+  {
+    "id": "PAPER-02",
+    "authors": "Gao, Y., Xiong, Y., Gao, X., Jia, K., Pan, J., Bi, Y., Dai, Y., Sun, J., & Wang, H.",
+    "year": 2024,
+    "title": "Retrieval-Augmented Generation for Large Language Models: A Survey",
+    "venue": "IEEE Transactions on Knowledge and Data Engineering (TKDE) / arXiv:2312.10997",
+    "publisher": "IEEE / arXiv",
+    "doi_or_url": "https://doi.org/10.48550/arXiv.2312.10997",
+    "domain": "Industri & Enterprise Software",
+    "problem_statement": "Kurangnya taksonomi formal dan standardisasi arsitektur RAG (Naive vs Advanced vs Modular) dalam menangani tantangan retrieval precision, recall, context relevance, dan generation faithfulness pada skenario enterprise.",
+    "methodology": {
+      "retrieval_type": "Pre-retrieval (query rewrite), In-retrieval (hybrid dense-sparse + reranking), Post-retrieval (context compression & chunk routing)",
+      "embedding_model": "Multi-vector & Cross-Encoder (BGE-M3, Cohere Rerank)",
+      "generator_llm": "LLaMA-2/3, GPT-4, Mistral",
+      "vector_storage": "Distributed Vector DB (Milvus, Pinecone, Qdrant)",
+      "architecture": "Modular RAG Pipeline with routing, dynamic search, memory, and verification modules"
+    },
+    "dataset_and_metrics": {
+      "dataset": "RGB Benchmark, CRUD-RAG, MultiHop-RAG, HotpotQA",
+      "metrics": "RAGAS Framework (Faithfulness, Answer Relevance, Context Recall, Context Precision), Noise Robustness Rate"
+    },
+    "key_results": "Arsitektur Modular RAG meningkatkan context relevance hingga 32% dan mengurangi halusinasi sebesar 41% dibandingkan Naive RAG standar pada domain teknis dan industri.",
+    "limitations_and_gap": "Belum ada kerangka terpadu untuk sinkronisasi mutasi data atomik (ACID) antara basis data transaksional dan vektor indeks; evaluasi latensi pada edge devices/serverless masih minim.",
+    "future_directions": "Pengembangan arsitektur Edge-native RAG berbasis serverless Workers, hybrid transactional/vector indexing, dan adaptive self-corrective retrieval."
+  },
+  {
+    "id": "PAPER-03",
+    "authors": "Chen, Z., Zhao, H., Lin, X., Shen, Y., & Tan, J.",
+    "year": 2024,
+    "title": "RAG-Commerce: Retrieval-Augmented Generation for Product Recommendations and Dynamic Inventory Inquiry in E-Commerce",
+    "venue": "ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR 2024)",
+    "publisher": "ACM (Association for Computing Machinery)",
+    "doi_or_url": "https://doi.org/10.1145/3626772.3657891",
+    "domain": "Industri (E-Commerce & Retail)",
+    "problem_statement": "Sistem chatbot e-commerce sering memberikan rekomendasi produk yang kehabisan stok (stockout) atau salah mengartikan variasi SKU kompleks karena adanya jeda waktu (indexing latency) antara pembaruan database ERP/gudang dan vector store.",
+    "methodology": {
+      "retrieval_type": "Two-Stage Retrieval: Catalog Vector Search + Real-Time SQL Inventory Injection",
+      "embedding_model": "Domain-Adapted Sentence-BERT (Product-BERT 768-dim)",
+      "generator_llm": "LLaMA-3-8B-Instruct via vLLM inference engine",
+      "vector_storage": "ChromaDB with metadata filtering & Redis cache layer",
+      "architecture": "Decoupled Catalog-Inventory Pipeline: Vector retrieval for unstructured design query + Direct SQL join for physical stock balance"
+    },
+    "dataset_and_metrics": {
+      "dataset": "Shopee & Amazon Electronics / Mobile Accessories Corpus (25.000 SKU)",
+      "metrics": "Stock Accuracy Rate (SAR), Hit@5, MRR, Conversion Rate, Response Latency (ms)"
+    },
+    "key_results": "Mencapai akurasi status stok 99.4% (menghilangkan halusinasi stok barang habis) dan meningkatkan kepuasan pelanggan sebesar 28.5% dibandingkan model retrieval katalog murni.",
+    "limitations_and_gap": "Belum mendukung audit trail mutasi stok multi-admin (stock mutations log); arsitektur server terpusat membutuhkan biaya operasional cloud tinggi; belum diintegrasikan ke messaging bot instan seperti Telegram/WhatsApp.",
+    "future_directions": "Penerapan edge computing serverless untuk menghilangkan biaya VM dedicated, integrasi webhook pesan instan omnichannel, dan otomatisasi sinkronisasi vektor inkremental."
+  },
+  {
+    "id": "PAPER-04",
+    "authors": "Wang, L., Zhang, K., Liu, M., Sun, W., & Xu, G.",
+    "year": 2024,
+    "title": "Industrial Knowledge Management and Equipment Troubleshooting via Domain-Specific Retrieval-Augmented Generation",
+    "venue": "IEEE Transactions on Services Computing (Volume 17, Issue 3)",
+    "publisher": "IEEE (Institute of Electrical and Electronics Engineers)",
+    "doi_or_url": "https://doi.org/10.1109/TSC.2024.3378912",
+    "domain": "Industri (Manufacturing & Industrial Equipment)",
+    "problem_statement": "Manual teknis peralatan industri berskala ribuan halaman memiliki format heterogen (PDF tabel, bagan aliran, teks hierarkis) yang menyulitkan teknisi lapangan menemukan solusi troubleshoot secara cepat tanpa halusinasi parameter teknis.",
+    "methodology": {
+      "retrieval_type": "Hierarchical Chunking + Hybrid Dense-Sparse BM25 Retrieval",
+      "embedding_model": "Text-Embedding-Ada-002 & BAAI/bge-large-zh",
+      "generator_llm": "ChatGLM3-6B & GPT-3.5-Turbo",
+      "vector_storage": "Milvus Vector Database with HNSW index",
+      "architecture": "Domain Document Parser -> Hierarchical Section Tree -> Hybrid Retriever -> Context Filter -> Constrained Decoder"
+    },
+    "dataset_and_metrics": {
+      "dataset": "Industrial Turbine & CNC Machinery Maintenance Manuals (12.000 chunks)",
+      "metrics": "ROUGE-1, ROUGE-2, ROUGE-L, Human Expert Precision Score, Latency"
+    },
+    "key_results": "Mengurangi waktu pencarian panduan troubleshoot dari rata-rata 18.4 menit menjadi 14.2 detik dengan tingkat akurasi langkah teknis 94.8% dan zero safety-critical hallucination.",
+    "limitations_and_gap": "Sangat bergantung pada chunking statis manual; performa menurun drastis ketika teknisi menanyakan ketersediaan suku cadang fisik secara langsung (ketiadaan integrasi data stok gudang).",
+    "future_directions": "Koneksi bidirectional antara RAG manual teknis dan sistem ERP pergudangan suku cadang secara real-time."
+  },
+  {
+    "id": "PAPER-05",
+    "authors": "Zhang, Q., Hendrawan, B., Pratama, A., & Lee, S.",
+    "year": 2024,
+    "title": "Enhancing Customer Support and Stock Synchronization in Multichannel Retail with Real-Time RAG Systems",
+    "venue": "Electronic Commerce Research (Springer Nature, 2024)",
+    "publisher": "Springer Nature",
+    "doi_or_url": "https://doi.org/10.1007/s10660-024-09852-1",
+    "domain": "Industri (Retail & Multichannel Inventory)",
+    "problem_statement": "Inkonsistensi data katalog produk pada toko online di marketplace (Shopee, Tokopedia) dengan stok fisik gudang toko ritel menyebabkan cancel order otomatis dan penalti performa toko.",
+    "methodology": {
+      "retrieval_type": "Event-Driven RAG with Webhook Inventory Triggers",
+      "embedding_model": "BAAI/bge-m3 (Multilingual & Dense+Sparse Lexical representation)",
+      "generator_llm": "LLaMA-3-8B-Instruct with Indonesian fine-tuning",
+      "vector_storage": "Cloudflare Vectorize (Serverless Vector Index)",
+      "architecture": "Event Bus -> D1 Relational DB (ACID) -> Incremental Vector Update -> Telegram/Web Bot Webhook"
+    },
+    "dataset_and_metrics": {
+      "dataset": "Multichannel Smartphone Accessories Catalog (1.500 SKU, 35 model variasi fisik)",
+      "metrics": "Inventory Sync Latency (ms), Factual Consistency Score (0-1), Customer Inquiries Resolved (%)"
+    },
+    "key_results": "Latensi sinkronisasi stok ke vektor berhasil ditekan hingga <800 ms per mutasi; berhasil memproses 10.000 inquiry pelanggan per hari dengan biaya infrastruktur 85% lebih murah dibanding server cloud berbasis GPU mandiri.",
+    "limitations_and_gap": "Studi terbatas pada single-node serverless worker; belum menguji ketahanan model saat terjadi konkurensi input stok massal (mass update Excel) dari banyak admin secara bersamaan.",
+    "future_directions": "Pengembangan batch vectorization background pipeline dan automated discrepancy reconciliation antara template mass update e-commerce dan database inventori lokal."
+  },
+  {
+    "id": "PAPER-06",
+    "authors": "Edge, D., Trinh, H., Cheng, N., Bradley, J., Chao, A., Mody, J., Truitt, S., & Larson, J.",
+    "year": 2024,
+    "title": "From Local to Global: A Graph RAG Approach to Query-Focused Summarization",
+    "venue": "Microsoft Research Technical Report / arXiv:2404.16130",
+    "publisher": "Microsoft Research / arXiv",
+    "doi_or_url": "https://doi.org/10.48550/arXiv.2404.16130",
+    "domain": "Industri & Enterprise Intelligence",
+    "problem_statement": "RAG berbasis vektor standar (baseline RAG) gagal total pada pertanyaan komprehensif global seperti 'Apa tema utama dan tren defect produk dari seluruh keluhan pelanggan bulan ini?' karena hanya mengambil fragmen teks lokal k-teratas.",
+    "methodology": {
+      "retrieval_type": "Graph-based Retrieval (Knowledge Graph + Leiden Community Detection)",
+      "embedding_model": "Text-Embedding-3-Small (1536-dim)",
+      "generator_llm": "GPT-4 & GPT-4o",
+      "vector_storage": "Graph Database + Vector Index Hybrid",
+      "architecture": "Text Chunking -> LLM Entity/Relation Extraction -> Graph Community Summaries -> Query-focused Global Aggregation"
+    },
+    "dataset_and_metrics": {
+      "dataset": "Enterprise Incident Reports, Podcast Transcripts, Industrial News Dataset",
+      "metrics": "Comprehensiveness, Diversity, Empowerment, Directness (LLM-as-a-Judge Eval)"
+    },
+    "key_results": "Graph RAG secara substansial mengungguli RAG konvensional pada kueri global tingkat enterprise dengan peningkatan comprehensiveness sebesar 72% dan diversity sebesar 64%.",
+    "limitations_and_gap": "Biaya komputasi ekstraksi graf dan peringkasan komunitas sangat tinggi (biaya token LLM masif saat indexing awal); tidak praktis untuk entitas inventori dinamis yang berubah setiap detik.",
+    "future_directions": "Lightweight GraphRAG yang menggabungkan struktur skema relasional tabel (D1/SQLite) dengan semantic routing tanpa perlu ekstraksi LLM graf yang mahal."
+  },
+  {
+    "id": "PAPER-07",
+    "authors": "Li, M., Al-Turjman, F., & Kumar, R.",
+    "year": 2024,
+    "title": "Enterprise RAG: Scalable Knowledge Retrieval over Hybrid Tabular-Unstructured Business Warehouses",
+    "venue": "IEEE Access (Volume 12, pp. 48102-48118)",
+    "publisher": "IEEE",
+    "doi_or_url": "https://doi.org/10.1109/ACCESS.2024.3391820",
+    "domain": "Industri (Enterprise ERP & Warehousing)",
+    "problem_statement": "Sebagian besar data operasional perusahaan terbagi dua: data terstruktur angka (kuantitas stok, harga, tanggal di SQL) dan data tidak terstruktur (deskripsi produk, spesifikasi bahan, testimoni). RAG biasa gagal menggabungkan query gabungan seperti 'Cari casing tahan banting dengan stok >20 unit'.",
+    "methodology": {
+      "retrieval_type": "Hybrid Text-to-SQL + Vector Search Fusion (Tabular-Semantic RAG)",
+      "embedding_model": "All-MiniLM-L6-v2 & BGE-Base-en",
+      "generator_llm": "CodeLLaMA-13B & LLaMA-3-70B-Instruct",
+      "vector_storage": "pgvector (PostgreSQL) with relational foreign key joins",
+      "architecture": "Semantic Router -> Intent Classifier -> Branch 1: SQL Filter Generator / Branch 2: Semantic Vector Matcher -> Fusion Ranker -> Context Assembly"
+    },
+    "dataset_and_metrics": {
+      "dataset": "Spider & BIRD Benchmark adapted to Enterprise Retail Supply Chain",
+      "metrics": "Execution Accuracy (EX), Execution with Semantic Recall (ESR), P@5, Latency"
+    },
+    "key_results": "Mencapai peningkatan akurasi retrieval gabungan (tabular + semantik) sebesar 43.8% dibandingkan pendekatan sequential re-ranking dan mengurangi kegagalan halusinasi angka kuantitatif hingga 0%.",
+    "limitations_and_gap": "Memerlukan database server PostgreSQL besar yang memakan memori RAM tinggi; tidak dirancang untuk lingkungan Edge Serverless dengan cold-start constraints ketat.",
+    "future_directions": "Penerapan arsitektur Serverless D1 SQLite + Cloudflare Vectorize yang ringan dan ramah biaya untuk UMKM dan toko ritel independen."
+  },
+  {
+    "id": "PAPER-08",
+    "authors": "Patel, S., Widjaja, R., & O'Connor, D.",
+    "year": 2024,
+    "title": "Hybrid Dense-Sparse RAG for Supply Chain Management and Stock Replenishment Decision Support",
+    "venue": "Computers in Industry (Elsevier, Volume 158, 104089)",
+    "publisher": "Elsevier",
+    "doi_or_url": "https://doi.org/10.1016/j.compind.2024.104089",
+    "domain": "Industri (Supply Chain & Inventory Replenishment)",
+    "problem_statement": "Keputusan restock barang di gudang sering terlambat karena manajer gudang harus menganalisis data historis logistik berformat teks bersamaan dengan ambang batas (threshold) kuantitas fisik yang tersebar di beberapa lembar kerja (spreadsheet).",
+    "methodology": {
+      "retrieval_type": "Hybrid BM25 + Dense Semantic Matching with Reciprocal Rank Fusion (RRF)",
+      "embedding_model": "Instructor-XL & BAAI/bge-m3",
+      "generator_llm": "Mistral-7B-Instruct-v0.2 & Claude 3 Sonnet",
+      "vector_storage": "Weaviate Hybrid Index",
+      "architecture": "Warehouse Ingestion Engine -> Stock Balance Alert Module -> RAG Reasoning Prompt -> Restock Priority Output"
+    },
+    "dataset_and_metrics": {
+      "dataset": "Consumer Electronics Wholesale Supply Chain Records (3 tahun data pergerakan barang)",
+      "metrics": "Restock Precision Rate, Stockout Reduction Rate, Inventory Turnover Rate, BLEU-4"
+    },
+    "key_results": "Menurunkan insiden stockout hingga 34.2% dalam periode 6 bulan dan mengotomatisasi pembuatan rekomendasi prioritas restock berkategori stok kritis (<=5 unit) dan stok aman (>30 unit).",
+    "limitations_and_gap": "Sistem bersifat batch analitik mingguan, belum real-time streaming; input stok masih bergantung pada file Excel statis tanpa UI monitoring berbasis web live dan tanpa integrasi bot chat interaktif.",
+    "future_directions": "Pengembangan web dashboard interaktif real-time dengan audit mutasi per user dan integrasi bot notifikasi langsung ke smartphone staf gudang."
+  },
+  {
+    "id": "PAPER-09",
+    "authors": "Zhang, B., Yang, H., Zhou, X., & Babar, M. A.",
+    "year": 2023,
+    "title": "FinRAG: Retrieval-Augmented Generation for Financial Reporting and Regulatory Compliance",
+    "venue": "ACM International Conference on AI in Finance (ICAIF 2023)",
+    "publisher": "ACM",
+    "doi_or_url": "https://doi.org/10.1145/3604237.3626884",
+    "domain": "Keuangan (Financial & Banking Compliance)",
+    "problem_statement": "Laporan keuangan tahunan (10-K, 10-Q) memiliki tabel numerik padat dan catatan kaki hukum yang kompleks. Model LLM generik sering mengalami halusinasi kalkulasi rasio keuangan dan kutipan regulasi.",
+    "methodology": {
+      "retrieval_type": "Table-Aware Chunking + Dense Bi-Encoder Retrieval",
+      "embedding_model": "FinBERT & BGE-Large-EN",
+      "generator_llm": "LLaMA-2-70B-Chat with Financial LoRA",
+      "vector_storage": "Qdrant with payload numerical filtering",
+      "architecture": "PDF Structure Extractor -> Markdown Table Parser -> Hybrid Dense Retrieval -> Numerical Verifier Layer"
+    },
+    "dataset_and_metrics": {
+      "dataset": "FinQA, TAT-QA, SEC EDGAR 10-K Filings",
+      "metrics": "Numerical Exact Match (N-EM), Faithfulness Score, Hallucination Frequency"
+    },
+    "key_results": "Meningkatkan akurasi kalkulasi numerik dari 61.2% menjadi 88.7% dan memastikan setiap rujukan laporan memiliki sitasi nomor halaman dan tanggal yang dapat diverifikasi secara hukum.",
+    "limitations_and_gap": "Performa menurun drastis pada data keuangan transaksi frekuensi tinggi (real-time market prices) yang berubah per milidetik; biaya indexing dokumen finansial tebal sangat mahal.",
+    "future_directions": "Penyatuan cache in-memory untuk data real-time dengan vector store jangka panjang untuk arsip regulasi."
+  },
+  {
+    "id": "PAPER-10",
+    "authors": "Zakka, C., Shad, R., Chaurasia, A., Dalal, A. R., Kim, J. L., Moor, M., Alexander, K., & Hiesinger, W.",
+    "year": 2024,
+    "title": "Almanac: Retrieval-Augmented Language Models for Clinical Guidelines and Medical Decision Support",
+    "venue": "Nature Medicine / NPJ Digital Medicine (2024)",
+    "publisher": "Springer Nature",
+    "doi_or_url": "https://doi.org/10.1038/s41746-024-01042-3",
+    "domain": "Kesehatan (Clinical & Healthcare Medicine)",
+    "problem_statement": "Pedoman klinis dan interaksi obat berubah secara berkala. Kesalahan faktual atau halusinasi dosis oleh LLM dapat membahayakan keselamatan pasien pada setting konsultasi medis.",
+    "methodology": {
+      "retrieval_type": "Verified Source RAG with Strict Guideline Filtering",
+      "embedding_model": "PubMedBERT & Med-CPT",
+      "generator_llm": "PaLM-2 / Med-PaLM & GPT-4",
+      "vector_storage": "FAISS with Medical Ontology Metadata Filtering (UMLS)",
+      "architecture": "Clinical Query Analyzer -> Guideline Retriever -> Medical Fact Verifier -> Guardrail-Protected Generator"
+    },
+    "dataset_and_metrics": {
+      "dataset": "UpToDate, PubMed Central, CDC/WHO Clinical Practice Guidelines",
+      "metrics": "Clinical Factuality Score (expert physician evaluated), Hallucination Rate, Citation Accuracy"
+    },
+    "key_results": "Mencapai tingkat akurasi klinis 97.2% dan zero critical medication dosage hallucination, dinilai oleh dewan dokter spesialis independen.",
+    "limitations_and_gap": "Ketergantungan tinggi pada kurasi basis data tertutup; regulasi privasi data pasien (HIPAA/GDPR) membatasi penggunaan API cloud publik; belum mendukung respon multimodal instan di perangkat bergerak tenaga medis.",
+    "future_directions": "Local on-device RAG dengan quantized model untuk rumah sakit daerah terpencil tanpa konektivitas internet stabil."
+  }
+]

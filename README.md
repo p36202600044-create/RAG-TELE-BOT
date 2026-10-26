@@ -1,14 +1,39 @@
-# 📱 RAG Telegram Bot x Cloudflare Workers AI & Vectorize
+# # RAG-TELE-BOT
 
-Sistem **RAG (Retrieval-Augmented Generation)** cerdas yang terintegrasi penuh antara **Cloudflare** (Workers AI + Vectorize) dan **Telegram Bot**, menggunakan data inventaris stok fisik gudang dan katalog produk custom case handphone dari folder `resource/`.
+> **Sistem RAG (Retrieval-Augmented Generation) Terintegrasi Cloudflare (Workers AI + Vectorize + D1) & Bot Telegram**  
+> Dilengkapi Pipeline Otomatis Generator **Literature GAP Matrix** (Tugas Tambahan Awal RTM 2 - Fakultas Teknik UDINUS).
 
-## 🔗 Akses Cepat (Deployment Aktif)
+## 🔗 Akses Cepat & Deployment Aktif
 
 - **Bot Telegram**: [t.me/ragteleshofiyanbot](https://t.me/ragteleshofiyanbot)
 - **Web Chat / Uji RAG**: [rag-tele-cf.rizki210605.workers.dev](https://rag-tele-cf.rizki210605.workers.dev/)
-- **Monitoring Stok**: [rag-tele-cf.rizki210605.workers.dev/monitor](https://rag-tele-cf.rizki210605.workers.dev/monitor) — login admin (HTTP Basic Auth, lihat `.env`)
-- **Prompt Lab**: [rag-tele-cf.rizki210605.workers.dev/prompts](https://rag-tele-cf.rizki210605.workers.dev/prompts) — uji lima prompt dari browser. Frontend Vercel siap di folder `web/` (lihat panduan deploy di bawah).
-- **Dokumen Lima Prompt**: [`PROMPTS.md`](./PROMPTS.md) — tujuan, teknik, prompt lengkap, contoh keluaran, dan rubrik evaluasi.
+- **Monitoring Stok**: [rag-tele-cf.rizki210605.workers.dev/monitor](https://rag-tele-cf.rizki210605.workers.dev/monitor) — login admin (HTTP Basic Auth)
+- **Prompt Lab (Vercel)**: [rag-tele.vercel.app](https://rag-tele.vercel.app/) — uji lima prompt tugas dari browser
+- **Literature GAP Matrix (MD)**: [`LITERATURE_GAP_MATRIX.md`](./LITERATURE_GAP_MATRIX.md)
+- **Laporan Kulino (MD)**: [`KULINO_LITERATURE_GAP_MATRIX.md`](./KULINO_LITERATURE_GAP_MATRIX.md)
+- **GAP Matrix (Spreadsheet CSV)**: [`data/literature_gap_matrix.csv`](./data/literature_gap_matrix.csv)
+- **Dokumen Lima Prompt**: [`PROMPTS.md`](./PROMPTS.md)
+
+---
+
+## 🎓 Tugas Tambahan: Awal RTM 2 (Fakultas Teknik UDINUS)
+
+Untuk memenuhi instruksi tugas perkuliahan **Fakultas Teknik Universitas Dian Nuswantoro**:
+1. **Literature GAP Matrix**: Mengkaji 10 artikel ilmiah bereputasi internasional (IEEE, ACM, Springer Nature, Elsevier, NeurIPS) pada domain **Industri (E-Commerce, Ritel, Inventori)** dengan perbandingan lintas domain (Keuangan & Kesehatan).
+2. **Pipeline RAG Generator**: Script `scripts/pipeline_gap_matrix.py` yang mampu mengindeks korpus paper, melakukan hybrid retrieval, menyintesis matriks kesenjangan riset (*Research GAP*), dan menjawab query riset ilmiah.
+3. **Hasil Siap Unggah Kulino**: Berkas laporan lengkap di [`KULINO_LITERATURE_GAP_MATRIX.md`](./KULINO_LITERATURE_GAP_MATRIX.md) dan [`KULINO_SUBMISSION.html`](./KULINO_SUBMISSION.html).
+
+### Cara Menjalankan Pipeline RAG GAP Matrix
+```bash
+# Generate seluruh matriks (Markdown, CSV, HTML, Kulino Doc)
+python3 scripts/pipeline_gap_matrix.py --generate
+
+# Query interaktif berbasis RAG terhadap literatur ilmiah
+python3 scripts/pipeline_gap_matrix.py --query "Bagaimana mengatasi sinkronisasi stok realtime e-commerce pada RAG?"
+
+# Tampilkan statistik korpus paper
+python3 scripts/pipeline_gap_matrix.py --summary
+```
 
 ---
 
