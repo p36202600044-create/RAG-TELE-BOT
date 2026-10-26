@@ -4,5 +4,5 @@
  *
  * Ganti URL di bawah bila Worker dipindah ke domain lain.
  */
-window.FLAZZ_API_BASE = "https://rag-tele-cf.rizki210605.workers.dev";
+window.FLAZZ_API_BASE = "https://rag-tele-shofiyan.workers.dev";
 window.FLAZZ_BOT_URL = "https://t.me/ragteleshofiyanbot";

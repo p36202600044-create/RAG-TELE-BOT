@@ -1,8 +1,8 @@
 # LITERATURE GAP MATRIX: RETRIEVAL-AUGMENTED GENERATION (RAG)
 **Mata Kuliah / Tugas**: Tugas Tambahan Awal RTM 2 - Fakultas Teknik Universitas Dian Nuswantoro (UDINUS)  
-**Domain Terpilih**: Industri (E-Commerce, Retail Inventory & Multichannel Logistics) dengan Komparasi Lintas Domain (Keuangan & Kesehatan)  
+**Domain Terpilih**: Industri & UMKM (E-Commerce, Retail Inventory, Conversational Commerce & Customer Support)  
 **URL Repository Source Code Pipeline RAG**: [https://github.com/p36202600044-create/RAG-TELE-BOT](https://github.com/p36202600044-create/RAG-TELE-BOT)  
-**Jumlah Artikel Ilmiah Dianalisis**: 10 Paper Bereputasi Internasional (IEEE, ACM, Elsevier, NEJM AI, NeurIPS, arXiv)
+**Jumlah Artikel Ilmiah Dianalisis**: 10 Paper Bereputasi Internasional (IEEE, ACM, Elsevier, NeurIPS, arXiv)
 
 ---
 
@@ -46,11 +46,11 @@ Berdasarkan analisis sistematis terhadap 10 artikel ilmiah terkini (2020-2024), 
 
 | No | Research Gap yang Diidentifikasi pada Literatur | Paper Rujukan | Solusi & Inovasi yang Diimplementasikan pada Proyek RAG-TELE-BOT | File / Modul Implementasi |
 |:---:|:---|:---|:---|:---|
-| **1** | Halusinasi ketersediaan stok fisik akibat jeda sinkronisasi indeks vektor | Rokon et al. (Walmart 2024), Xu et al. (Alibaba 2024) | **Hybrid Injection**: Pengecekan nama tipe secara leksikal & injeksi langsung status stok aktual dari database D1 sebelum/bersama prompt LLM | [`src/rag.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/rag.ts), [`src/stock.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/stock.ts) |
-| **2** | Tidak adanya jejak audit mutasi stok terstruktur (audit trail) pada sistem RAG e-commerce | Xu, Cruz, et al. (ACM SIGIR 2024), Heredia-Alvaro (Elsevier 2024) | Tabel `stock_mutations` pada Cloudflare D1 yang mencatat timestamp, delta, saldo awal/akhir, aktor admin, dan catatan pergerakan barang | [`migrations/0001_stock.sql`](file:///Volumes/RYUARNOVI/rag-tele/migrations/0001_stock.sql), [`src/stock.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/stock.ts) |
-| **3** | Tingginya biaya operasional dan latensi server GPU cloud dedicated untuk UMKM | Lewis et al. (NeurIPS 2020), Gao et al. (2023) | **Serverless Edge RAG**: Memanfaatkan Cloudflare Workers AI (`@cf/baai/bge-m3` + `@cf/meta/llama-3.3-70b`) dan Vectorize dengan biaya serverless mendekati nol | [`wrangler.jsonc`](file:///Volumes/RYUARNOVI/rag-tele/wrangler.jsonc), [`src/index.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/index.ts) |
-| **4** | Ketiadaan bot interaktif mobile untuk pembeli dan admin toko | Xu et al. (Alibaba 2024) | Bot Telegram interaktif via Webhook HTTPS instan dengan dukungan slash commands (`/stok`, `/prompts`, `/restock`, dll) | [`src/telegram.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/telegram.ts), [`src/telegram-text.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/telegram-text.ts) |
-| **5** | Inkonsistensi penamaan variasi casing marketplace (Shopee) terhadap nama fisik Apple | Dataset Shopee & PDF Toko Flazzstore | Modul normalisasi variasi Few-Shot & Audit Judul terhadap stok (Prompt 2 & 3 Tahap 1) | [`web/prompts.html`](file:///Volumes/RYUARNOVI/rag-tele/web/prompts.html), [`src/prompts.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/prompts.ts) |
+| **1** | Halusinasi ketersediaan stok fisik akibat jeda sinkronisasi indeks vektor | Rokon et al. (Walmart 2024), Xu et al. (Alibaba 2024) | **Hybrid Injection**: Pengecekan nama tipe secara leksikal & injeksi langsung status stok aktual dari database D1 sebelum/bersama prompt LLM | [`src/rag.ts`](./src/rag.ts), [`src/stock.ts`](./src/stock.ts) |
+| **2** | Tidak adanya jejak audit mutasi stok terstruktur (audit trail) pada sistem RAG e-commerce | Xu, Cruz, et al. (ACM SIGIR 2024), Heredia-Alvaro (Elsevier 2024) | Tabel `stock_mutations` pada Cloudflare D1 yang mencatat timestamp, delta, saldo awal/akhir, aktor admin, dan catatan pergerakan barang | [`migrations/0001_stock.sql`](./migrations/0001_stock.sql), [`src/stock.ts`](./src/stock.ts) |
+| **3** | Tingginya biaya operasional dan latensi server GPU cloud dedicated untuk UMKM | Lewis et al. (NeurIPS 2020), Gao et al. (2023) | **Serverless Edge RAG**: Memanfaatkan Cloudflare Workers AI (`@cf/baai/bge-m3` + `@cf/meta/llama-3.3-70b`) dan Vectorize dengan biaya serverless mendekati nol | [`wrangler.jsonc`](./wrangler.jsonc), [`src/index.ts`](./src/index.ts) |
+| **4** | Ketiadaan bot interaktif mobile untuk pembeli dan admin toko | de Freitas & Lotufo (Retail-GPT 2024), Xu et al. (2024) | Bot Telegram interaktif via Webhook HTTPS instan dengan dukungan slash commands (`/stok`, `/prompts`, `/restock`, dll) | [`src/telegram.ts`](./src/telegram.ts), [`src/telegram-text.ts`](./src/telegram-text.ts) |
+| **5** | Inkonsistensi penamaan variasi casing marketplace (Shopee) terhadap nama fisik Apple | Zhang et al. (2024), Dataset Shopee & PDF Flazzstore | Modul normalisasi variasi Few-Shot & Audit Judul terhadap stok (Prompt 2 & 3 Tahap 1) | [`web/prompts.html`](./web/prompts.html), [`src/prompts.ts`](./src/prompts.ts) |
 
 ---
 

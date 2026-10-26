@@ -6,8 +6,8 @@
 ## Akses Cepat & Deployment Aktif
 
 - **Bot Telegram**: [t.me/ragteleshofiyanbot](https://t.me/ragteleshofiyanbot)
-- **Web Chat / Uji RAG**: [rag-tele-cf.rizki210605.workers.dev](https://rag-tele-cf.rizki210605.workers.dev/)
-- **Monitoring Stok**: [rag-tele-cf.rizki210605.workers.dev/monitor](https://rag-tele-cf.rizki210605.workers.dev/monitor) — login admin (HTTP Basic Auth)
+- **Web Chat / Uji RAG**: [rag-tele.vercel.app](https://rag-tele.vercel.app/)
+- **Monitoring Stok**: [rag-tele.vercel.app/monitor](https://rag-tele.vercel.app/monitor) — login admin (HTTP Basic Auth)
 - **Prompt Lab (Vercel)**: [rag-tele.vercel.app](https://rag-tele.vercel.app/) — uji lima prompt tugas dari browser
 - **Literature GAP Matrix (MD)**: [`LITERATURE_GAP_MATRIX.md`](./LITERATURE_GAP_MATRIX.md)
 - **Laporan Kulino (MD)**: [`KULINO_LITERATURE_GAP_MATRIX.md`](./KULINO_LITERATURE_GAP_MATRIX.md)
@@ -19,7 +19,7 @@
 ## Tugas Tambahan: Awal RTM 2 (Fakultas Teknik UDINUS)
 
 Untuk memenuhi instruksi tugas perkuliahan **Fakultas Teknik Universitas Dian Nuswantoro**:
-1. **Literature GAP Matrix**: Mengkaji 10 artikel ilmiah bereputasi internasional (IEEE, ACM, Springer Nature, Elsevier, NeurIPS) pada domain **Industri (E-Commerce, Ritel, Inventori)** dengan perbandingan lintas domain (Keuangan & Kesehatan).
+1. **Literature GAP Matrix**: Mengkaji 10 artikel ilmiah bereputasi internasional (IEEE, ACM, Elsevier, NeurIPS, arXiv) pada domain **Industri & UMKM (E-Commerce, Ritel, Inventori & Layanan Pelanggan)**.
 2. **Pipeline RAG Generator**: Script `scripts/pipeline_gap_matrix.py` yang mampu mengindeks korpus paper, melakukan hybrid retrieval, menyintesis matriks kesenjangan riset (*Research GAP*), dan menjawab query riset ilmiah.
 3. **Hasil Siap Unggah Kulino**: Berkas laporan lengkap di [`KULINO_LITERATURE_GAP_MATRIX.md`](./KULINO_LITERATURE_GAP_MATRIX.md) dan [`KULINO_SUBMISSION.html`](./KULINO_SUBMISSION.html).
 
@@ -340,7 +340,7 @@ Saat diminta:
 ### Konfigurasi API Base
 Frontend memanggil Worker melalui `window.FLAZZ_API_BASE` di [`web/config.js`](./web/config.js):
 ```js
-window.FLAZZ_API_BASE = "https://rag-tele-cf.rizki210605.workers.dev";
+window.FLAZZ_API_BASE = "https://rag-tele.vercel.app";
 window.FLAZZ_BOT_URL = "https://t.me/ragteleshofiyanbot";
 ```
 Ganti URL bila Worker dipindah ke domain lain, lalu redeploy Vercel. Worker sudah mengirim header CORS `Access-Control-Allow-Origin: *`, termasuk pada respons login 401/503, sehingga dashboard bisa memakai Basic Auth dari domain Vercel.

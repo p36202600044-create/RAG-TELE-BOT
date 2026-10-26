@@ -16,7 +16,7 @@
 ### I. LATAR BELAKANG DOMAIN & TUJUAN
 Pada tugas pertama, telah dikembangkan sistem Retrieval-Augmented Generation (RAG) untuk toko ritel smartphone casing **Flazzstore** yang terintegrasi dengan bot Telegram, database katalog Shopee (1.114 item), dan data stok fisik casing iPhone (35 model). 
 
-Untuk memenuhi **Tugas Tambahan Awal RTM 2**, dilakukan studi literatur ilmiah komprehensif terhadap **10 artikel ilmiah bereputasi internasional** (IEEE, ACM, Elsevier, NEJM AI, NeurIPS, dan arXiv) untuk memetakan keterbatasan metode penelitian saat ini (**Research GAPs**) serta membuktikan kebaruan (*novelty*) dari arsitektur pipeline RAG yang dikembangkan.
+Untuk memenuhi **Tugas Tambahan Awal RTM 2**, dilakukan studi literatur ilmiah komprehensif terhadap **10 artikel ilmiah bereputasi internasional** (IEEE, ACM, Elsevier, NeurIPS, dan arXiv) pada domain **Industri, UMKM, dan E-Commerce** untuk memetakan keterbatasan metode penelitian saat ini (**Research GAPs**) serta membuktikan kebaruan (*novelty*) dari arsitektur pipeline RAG yang dikembangkan.
 
 ---
 
@@ -55,7 +55,7 @@ Dari matriks literatur di atas, ditemukan 3 kesenjangan utama dalam penerapan RA
    - *Solusi Proyek*: Kami menerapkan arsitektur **Hybrid Transactional/Vector** di Cloudflare Workers: database ACID (D1) mencatat mutasi stok secara instan, dan memicu sinkronisasi inkremental ke Cloudflare Vectorize (`@cf/baai/bge-m3`).
 
 2. **Kesenjangan Antarmuka Operasional & Audit Trail (Operational Traceability Gap)**:
-   - *Masalah*: Penelitian sebelumnya (Xu et al. 2024, Xu, Cruz, et al. 2024) hanya berfokus pada evaluasi akurasi jawaban LLM, namun mengabaikan kebutuhan pencatatan mutasi (siapa admin yang mengubah stok, kapan, dan berapa delta perubahannya).
+   - *Masalah*: Penelitian sebelumnya (Xu et al. 2024, de Freitas & Lotufo 2024) hanya berfokus pada evaluasi akurasi jawaban LLM, namun mengabaikan kebutuhan pencatatan mutasi (siapa admin yang mengubah stok, kapan, dan berapa delta perubahannya).
    - *Solusi Proyek*: Disediakan dashboard `/monitor` terotentikasi dengan tabel riwayat `stock_mutations`, sehingga setiap jawaban bot Telegram dapat dipertanggungjawabkan ke data fisik gudang.
 
 3. **Kesenjangan Efisiensi Infrastruktur (Serverless Edge vs. Dedicated GPU)**:

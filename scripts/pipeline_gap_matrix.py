@@ -187,9 +187,9 @@ def generate_full_markdown(papers: List[Dict[str, Any]]) -> str:
 
     return f"""# LITERATURE GAP MATRIX: RETRIEVAL-AUGMENTED GENERATION (RAG)
 **Mata Kuliah / Tugas**: Tugas Tambahan Awal RTM 2 - Fakultas Teknik Universitas Dian Nuswantoro (UDINUS)  
-**Domain Terpilih**: Industri (E-Commerce, Retail Inventory & Multichannel Logistics) dengan Komparasi Lintas Domain (Keuangan & Kesehatan)  
+**Domain Terpilih**: Industri & UMKM (E-Commerce, Retail Inventory, Conversational Commerce & Customer Support)  
 **URL Repository Source Code Pipeline RAG**: [https://github.com/p36202600044-create/RAG-TELE-BOT](https://github.com/p36202600044-create/RAG-TELE-BOT)  
-**Jumlah Artikel Ilmiah Dianalisis**: {total_papers} Paper Bereputasi Internasional (IEEE, ACM, Elsevier, NEJM AI, NeurIPS, arXiv)
+**Jumlah Artikel Ilmiah Dianalisis**: {total_papers} Paper Bereputasi Internasional (IEEE, ACM, Elsevier, NeurIPS, arXiv)
 
 ---
 
@@ -222,11 +222,11 @@ Berdasarkan analisis sistematis terhadap {total_papers} artikel ilmiah terkini (
 
 | No | Research Gap yang Diidentifikasi pada Literatur | Paper Rujukan | Solusi & Inovasi yang Diimplementasikan pada Proyek RAG-TELE-BOT | File / Modul Implementasi |
 |:---:|:---|:---|:---|:---|
-| **1** | Halusinasi ketersediaan stok fisik akibat jeda sinkronisasi indeks vektor | Rokon et al. (Walmart 2024), Xu et al. (Alibaba 2024) | **Hybrid Injection**: Pengecekan nama tipe secara leksikal & injeksi langsung status stok aktual dari database D1 sebelum/bersama prompt LLM | [`src/rag.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/rag.ts), [`src/stock.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/stock.ts) |
-| **2** | Tidak adanya jejak audit mutasi stok terstruktur (audit trail) pada sistem RAG e-commerce | Xu, Cruz, et al. (ACM SIGIR 2024), Heredia-Alvaro (Elsevier 2024) | Tabel `stock_mutations` pada Cloudflare D1 yang mencatat timestamp, delta, saldo awal/akhir, aktor admin, dan catatan pergerakan barang | [`migrations/0001_stock.sql`](file:///Volumes/RYUARNOVI/rag-tele/migrations/0001_stock.sql), [`src/stock.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/stock.ts) |
-| **3** | Tingginya biaya operasional dan latensi server GPU cloud dedicated untuk UMKM | Lewis et al. (NeurIPS 2020), Gao et al. (2023) | **Serverless Edge RAG**: Memanfaatkan Cloudflare Workers AI (`@cf/baai/bge-m3` + `@cf/meta/llama-3.3-70b`) dan Vectorize dengan biaya serverless mendekati nol | [`wrangler.jsonc`](file:///Volumes/RYUARNOVI/rag-tele/wrangler.jsonc), [`src/index.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/index.ts) |
-| **4** | Ketiadaan bot interaktif mobile untuk pembeli dan admin toko | Xu et al. (Alibaba 2024) | Bot Telegram interaktif via Webhook HTTPS instan dengan dukungan slash commands (`/stok`, `/prompts`, `/restock`, dll) | [`src/telegram.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/telegram.ts), [`src/telegram-text.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/telegram-text.ts) |
-| **5** | Inkonsistensi penamaan variasi casing marketplace (Shopee) terhadap nama fisik Apple | Dataset Shopee & PDF Toko Flazzstore | Modul normalisasi variasi Few-Shot & Audit Judul terhadap stok (Prompt 2 & 3 Tahap 1) | [`web/prompts.html`](file:///Volumes/RYUARNOVI/rag-tele/web/prompts.html), [`src/prompts.ts`](file:///Volumes/RYUARNOVI/rag-tele/src/prompts.ts) |
+| **1** | Halusinasi ketersediaan stok fisik akibat jeda sinkronisasi indeks vektor | Rokon et al. (Walmart 2024), Xu et al. (Alibaba 2024) | **Hybrid Injection**: Pengecekan nama tipe secara leksikal & injeksi langsung status stok aktual dari database D1 sebelum/bersama prompt LLM | [`src/rag.ts`](./src/rag.ts), [`src/stock.ts`](./src/stock.ts) |
+| **2** | Tidak adanya jejak audit mutasi stok terstruktur (audit trail) pada sistem RAG e-commerce | Xu, Cruz, et al. (ACM SIGIR 2024), Heredia-Alvaro (Elsevier 2024) | Tabel `stock_mutations` pada Cloudflare D1 yang mencatat timestamp, delta, saldo awal/akhir, aktor admin, dan catatan pergerakan barang | [`migrations/0001_stock.sql`](./migrations/0001_stock.sql), [`src/stock.ts`](./src/stock.ts) |
+| **3** | Tingginya biaya operasional dan latensi server GPU cloud dedicated untuk UMKM | Lewis et al. (NeurIPS 2020), Gao et al. (2023) | **Serverless Edge RAG**: Memanfaatkan Cloudflare Workers AI (`@cf/baai/bge-m3` + `@cf/meta/llama-3.3-70b`) dan Vectorize dengan biaya serverless mendekati nol | [`wrangler.jsonc`](./wrangler.jsonc), [`src/index.ts`](./src/index.ts) |
+| **4** | Ketiadaan bot interaktif mobile untuk pembeli dan admin toko | de Freitas & Lotufo (Retail-GPT 2024), Xu et al. (2024) | Bot Telegram interaktif via Webhook HTTPS instan dengan dukungan slash commands (`/stok`, `/prompts`, `/restock`, dll) | [`src/telegram.ts`](./src/telegram.ts), [`src/telegram-text.ts`](./src/telegram-text.ts) |
+| **5** | Inkonsistensi penamaan variasi casing marketplace (Shopee) terhadap nama fisik Apple | Zhang et al. (2024), Dataset Shopee & PDF Flazzstore | Modul normalisasi variasi Few-Shot & Audit Judul terhadap stok (Prompt 2 & 3 Tahap 1) | [`web/prompts.html`](./web/prompts.html), [`src/prompts.ts`](./src/prompts.ts) |
 
 ---
 
@@ -271,7 +271,7 @@ def generate_kulino_submission_markdown(papers: List[Dict[str, Any]]) -> str:
 ### I. LATAR BELAKANG DOMAIN & TUJUAN
 Pada tugas pertama, telah dikembangkan sistem Retrieval-Augmented Generation (RAG) untuk toko ritel smartphone casing **Flazzstore** yang terintegrasi dengan bot Telegram, database katalog Shopee (1.114 item), dan data stok fisik casing iPhone (35 model). 
 
-Untuk memenuhi **Tugas Tambahan Awal RTM 2**, dilakukan studi literatur ilmiah komprehensif terhadap **10 artikel ilmiah bereputasi internasional** (IEEE, ACM, Elsevier, NEJM AI, NeurIPS, dan arXiv) untuk memetakan keterbatasan metode penelitian saat ini (**Research GAPs**) serta membuktikan kebaruan (*novelty*) dari arsitektur pipeline RAG yang dikembangkan.
+Untuk memenuhi **Tugas Tambahan Awal RTM 2**, dilakukan studi literatur ilmiah komprehensif terhadap **10 artikel ilmiah bereputasi internasional** (IEEE, ACM, Elsevier, NeurIPS, dan arXiv) pada domain **Industri, UMKM, dan E-Commerce** untuk memetakan keterbatasan metode penelitian saat ini (**Research GAPs**) serta membuktikan kebaruan (*novelty*) dari arsitektur pipeline RAG yang dikembangkan.
 
 ---
 
@@ -299,7 +299,7 @@ Dari matriks literatur di atas, ditemukan 3 kesenjangan utama dalam penerapan RA
    - *Solusi Proyek*: Kami menerapkan arsitektur **Hybrid Transactional/Vector** di Cloudflare Workers: database ACID (D1) mencatat mutasi stok secara instan, dan memicu sinkronisasi inkremental ke Cloudflare Vectorize (`@cf/baai/bge-m3`).
 
 2. **Kesenjangan Antarmuka Operasional & Audit Trail (Operational Traceability Gap)**:
-   - *Masalah*: Penelitian sebelumnya (Xu et al. 2024, Xu, Cruz, et al. 2024) hanya berfokus pada evaluasi akurasi jawaban LLM, namun mengabaikan kebutuhan pencatatan mutasi (siapa admin yang mengubah stok, kapan, dan berapa delta perubahannya).
+   - *Masalah*: Penelitian sebelumnya (Xu et al. 2024, de Freitas & Lotufo 2024) hanya berfokus pada evaluasi akurasi jawaban LLM, namun mengabaikan kebutuhan pencatatan mutasi (siapa admin yang mengubah stok, kapan, dan berapa delta perubahannya).
    - *Solusi Proyek*: Disediakan dashboard `/monitor` terotentikasi dengan tabel riwayat `stock_mutations`, sehingga setiap jawaban bot Telegram dapat dipertanggungjawabkan ke data fisik gudang.
 
 3. **Kesenjangan Efisiensi Infrastruktur (Serverless Edge vs. Dedicated GPU)**:
@@ -438,7 +438,7 @@ def generate_printable_html(papers: List[Dict[str, Any]]) -> str:
   <div class="meta-box">
     <strong>URL Repository Source Code Pipeline RAG di GitHub:</strong><br>
     <a href="https://github.com/p36202600044-create/RAG-TELE-BOT" target="_blank">https://github.com/p36202600044-create/RAG-TELE-BOT</a><br><br>
-    <em>Catatan Pengunggahan Kulino: Dokumen ini memuat Literature GAP Matrix 10 artikel ilmiah bereputasi (IEEE, ACM, Elsevier, NEJM AI, NeurIPS, arXiv) beserta bukti implementasi source code pipeline RAG.</em>
+    <em>Catatan Pengunggahan Kulino: Dokumen ini memuat Literature GAP Matrix 10 artikel ilmiah bereputasi (IEEE, ACM, Elsevier, NeurIPS, arXiv) beserta bukti implementasi source code pipeline RAG.</em>
   </div>
 
   <h2 class="section-title">Tabel Literature GAP Matrix</h2>

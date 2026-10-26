@@ -53,8 +53,8 @@ const items = Object.values(stock) as unknown as StockItem[];
 
 const messages: Array<[string, string]> = [
   ["/start", welcomeMessage()],
-  ["/help", helpMessage("https://rag-tele-cf.rizki210605.workers.dev")],
-  ["/prompts", promptsMenuMessage("https://rag-tele-cf.rizki210605.workers.dev")],
+  ["/help", helpMessage("https://rag-tele-shofiyan.workers.dev")],
+  ["/prompts", promptsMenuMessage("https://rag-tele-shofiyan.workers.dev")],
   ["/stok", stockSummaryMessage(items)],
 ];
 

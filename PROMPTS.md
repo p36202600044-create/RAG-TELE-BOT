@@ -10,7 +10,7 @@ Dokumen ini berisi lima entri prompt untuk pengujian tugas Flazzstore. Semua pro
 ## Cara mencoba
 
 ### Di browser (paling cepat)
-Buka **https://rag-tele-cf.rizki210605.workers.dev/prompts**, pilih salah satu dari lima kartu, isi input (atau biarkan default), lalu klik **Jalankan**. Hasil JSON muncul langsung di kartu. Halaman Vercel `/prompts` memakai API yang sama setelah frontend di-deploy.
+Buka **https://rag-tele.vercel.app/**, pilih salah satu dari lima kartu, isi input (atau biarkan default), lalu klik **Jalankan**. Hasil JSON muncul langsung di kartu.
 
 ### Di Telegram
 Buka [@ragteleshofiyanbot](https://t.me/ragteleshofiyanbot), lalu kirim:
@@ -28,10 +28,10 @@ Tanpa argumen, bot memakai data demo dari katalog/stok saat ini. Menu lengkap: `
 ### Lewat API
 ```bash
 # Daftar lima entri prompt
-curl https://rag-tele-cf.rizki210605.workers.dev/api/prompts
+curl https://rag-tele-shofiyan.workers.dev/api/prompts
 
 # Jalankan salah satu prompt
-curl -X POST https://rag-tele-cf.rizki210605.workers.dev/api/prompts/run \
+curl -X POST https://rag-tele-shofiyan.workers.dev/api/prompts/run \
   -H 'Content-Type: application/json' \
   -d '{"id":"restock","input":"15"}'
 ```
